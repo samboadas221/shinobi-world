@@ -1,0 +1,20 @@
+Bugs:
+1) No movement control for Android/Mobile
+
+2) Debug HUD too big on android (Covering 70% of the screen)
+
+3) Character creation Screen too big on PC (For example, an stat in the left and to see its value you have to turn your head to the opposite side of the screen)
+
+4) This is not a bug. But the remove the Genin Exam countdown from the debug console, we're not going to implement events soon
+
+Advance:
+1) Now lets start to create some procedurally generated villages (With buildings, streets, etc) and the map in general. So you can move around in a much more bigger map
+  Note: Same as with generating the world, generate the map first where the player spawns, later you can procedurally generate the rest
+
+2) Now also spawn some ninjas in the village
+  Note: And make a dynamic spawn and despawn system, where the system despawn ninjas/people/beasts too far from the player (They return to the passive simulation), and spawn ninjas/people/beasts near the plaver, for example if the player leaves the village and is on the road the game can spawn rogue ninjas or ninjas from another villages or traveling (They can be friendly, neutral or aggressive)
+  Note: This ninja spawn/despawn must also be executed on the background so the game starts fast, and if the player leaves a zone the game doesnt freeze
+  Note: Also read /assets/configs/entities/enemies/border_scout.yaml so you can see some properties that must be deleted or reworked so they can fit with the new procedural spawn/despawn system
+  Note: Remember to use the world seed to generate the same villages, the same map, the same ninjas, the same everything if the same seed is picked twice. The only thing that can change is the player (He can start the same seed with two totally different ninjas) or the game/simulation later, but the start must be exactly the same
+
+Mandatory: Follow directives on main_goal.txt

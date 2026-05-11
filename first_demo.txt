@@ -1,0 +1,36 @@
+
+lets go with the first demo.
+FOLLOW ALL DIRECTIVES ON main_goal.txt
+
+When the game starts you show a logo of my company (Boadas Corp. You can generate a placeholder logo with AI or just download a random image from the internet)
+Then the menu appears: Play, Settings, Exit. (Settings does nothing now)
+When player chooses to Play:
+	A creation character screen appears
+		The character is mostly random (Except for the clothes, which the user can personalize in depth)
+		The user has some random points to spend on abilities (Like speed, max chakra, nature, chakra control, etc)
+			Points will be between 5 to 25
+		The user will also start with a natural chakra nature and other affinity (But jutsus of this second chakra nature require 25% more chakra than usual)
+		User can also click "re generate" (Maybe we should just use a picture or a simbol of a dice) to see if he gets more lucky (More points to spend or a chakra nature he likes more, or more stat points)
+		User can also pick his name, etc, choose male or female, etc.
+
+		Once the ninja is created:
+		User appears in a random village, the genin exam is in 10 days. User is allowed to use training fields (User get a +20% boost if he trains on this training field)
+			Yeah, user can cast jutsus in the overworld to practice and level up jutsus, reduce hand seals required, etc. But also wastes chakra
+		Despite all of this user can just leave the village if he wants or try to attack people (But probably will be killed by the jounins soon)
+		This year the genin exam will be a combat, but killing is forbidden (But it can happen if something goes wrong)
+
+NOTES: All game runs will have a random seed, using this seed you will generate this structure:
+	Villages: Between 10 and 20 (All names will be decided previousle, like Leaf Village, etc; And of course, some villages might not get at all into the game run)
+		Villages will be between small and big (A number between 1 to 5)
+		Villages will have this structure: One single Kage, some Anbu, some Jounin, a decent amount of Chuunin, a lot of genins, a lot of child ninja (Which will take genin exam in next years), a lot of population (Adult people who are not ninja), and some Jounin/Chuunin in the bingo list (Basically ninjas who abandoned the village and now are hunted, player can even become a bounty hunter)
+			Remember to expose the numbers in a file like "village_configuration.yaml" so I can adjust for example the max number of Jounin for a Small Village or a Medium Village, so I can decide if the Max is 5 or 500
+			All ninjas must be stored and handled using a system which combines a database storage (So you remember all names, jutsus and stats of every single ninja), but you dont actively simulate all of their actions, you only simulate actions of a ninja close to the player. All others are stored or under a passive simulation, like, make them 1% stronger every 5 minutes, or kill one or two every 10 minutes. Also spawn the ninja and take it off the passive simulation is hes close to the player
+			Yes, the player can indeed kill all NPCs of the world
+	Rogue ninja: Depending on the size of the world and the amount of villages, you will generate some other rogue ninja in the world (Apart from the rogues ninjas of the villages. These new ninjas are not related to any village, and they may or may not be in a bingo list)
+		Not all rogue ninjas are bad, they can be bad an attack the player, be neutral, or even be good and try to help or teach new jutsus to our player
+	NOTE: Ninjas from others villages, same as rogue ninja, not all are bad. If our villages are allies, between 95% and 100% of ninjas in that village will be friendly if we find any in the overworld. But theres a little chance there are a few ninjas which may seem good but are evil inside and even can attack us or are planning to become a rogue ninja
+	Summons: Player can find monsters villages, just like in naruto (With frogs, Snakes, Dogs, Cats, etc) and make a contract with some beast so he can summon that beast in battle
+		The player can of course find a teacher, lets say from the Shinobi academy and if that teacher has a contract with a beast he can help our player to get a contract with that kind of beast
+		But also, if the player executes the summoning jutsu without any contract he will be summoned to a beast village most compatible with him (Just like in Naruto), if he gets a contract or gets killed thats on him. But some beast will be more friendly and open to just talk like frogs, and others will be more agressive like snakes or scorpions
+
+This is the first demo, all with placeholders. There are no chuunin exams, jounin exams, anbu exams, kage ascension, villages wars or any of that, because thats for the future, with a solid base and with good assets and sprites (Thats not your work, its mine)

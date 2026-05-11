@@ -1,0 +1,90 @@
+
+Read main_goal.txt for directives
+Read first_demo.txt to understand the task Codex was executing
+
+Context of Codex and where he stopped in the last session: (I run out of tokens)
+
+Voy a leer first_demo.txt ahora y cruzarlo con las reglas de main_goal.txt antes de tocar código. Si pide una feature nueva, voy a mantener el patrón config-first: parámetros YAML primero, módulos pequeños después.
+
+
+Se ejecutaron 3 comandos
+Leído. Esto es bastante más grande que “agregar un botón”, así que voy a tratarlo como el primer flujo real del juego: splash con logo, menú, creación de personaje, generación seed-driven del mundo, persistencia en Drift, y luego entrada al overworld existente.
+
+Arquitectura
+
+app/screens: splash -> menú -> creación -> juego.
+character: genera identidad, naturalezas, puntos y ropa; no toca mundo ni combate.
+world: genera una run con seed, 10-20 aldeas, tamaños, población ninja y rogue ninja; no simula todo activamente.
+data: guarda run, aldeas, ninjas y perfil del jugador en Drift.
+game: recibe el perfil creado y la aldea inicial, y muestra el estado de exam/training/jutsus en el HUD.
+Configs nuevos
+
+configs/app/brand.yaml: logo, duraciones, textos de menú.
+configs/character/creation.yaml: rango de puntos 5-25, género, nombres, naturalezas, afinidad secundaria +25%, regeneración.
+configs/character/clothing.yaml: opciones de ropa y colores.
+configs/world/run_generation.yaml: seed, aldeas 10-20, tamaños 1-5, selección de aldea inicial.
+configs/world/village_configuration.yaml: rangos por tamaño para kage, anbu, jounin, chuunin, genin, niños ninja, población, bingo-list.
+configs/world/passive_simulation.yaml: boost pasivo y muertes pasivas por intervalo.
+configs/world/exam.yaml: genin exam en 10 días y reglas de killing forbidden.
+configs/world/training.yaml: training field +20% y costes/beneficios de práctica.
+Interacción
+La creación produce PlayerProfile. La generación del mundo produce WorldRun, aldeas y ninjas guardados en Drift. El juego arranca en una aldea aleatoria de esa run, y el overworld lee el perfil/aldea/exam para mostrar y practicar jutsus sin mezclarlo con combate.
+
+
+Se ejecutaron 4 comandos
+Ya confirmé el estado actual: la app entra directo al overworld y la base de datos todavía solo guarda algunas tablas demo. Voy a convertir el arranque en un flujo real sin meter lógica en el widget principal: ShinobiApp cargará config, luego splash/menu/character, y recién después instanciará el juego con perfil + mundo generado.
+
+Se crearon 8 archivos,se editó 1 archivo
+Los YAML nuevos están separados por dominio: app, character y world. Estoy generando un logo placeholder local para Boadas Corp y después conecto estos configs al loader tipado.
+
+
+Se crearon 6 archivos,se editaron 3 archivos,ejecutó 1 comando
+Ahora voy a añadir los modelos de runtime: PlayerProfile para lo creado por el jugador, GeneratedWorldRun para la run seed-driven, y un generador que crea aldeas/ninjas pero solo deja activo lo cercano al jugador. Después lo guardo en Drift antes de entrar al mapa.
+
+Se crearon 5 archivos
+La generación ya produce una run con seed, aldeas y ninjas inactivos por defecto. Eso cumple la idea base: todos los NPC existen en base de datos, pero no se simulan activamente hasta que estén cerca del jugador. Ahora amplío Drift para guardar la run, el perfil y todos esos ninjas.
+
+
+Se crearon 7 archivos,se editaron 3 archivos
+El flujo de splash/menú/creación ya existe en código. Ahora conecto el overworld para recibir el perfil creado y la run generada, en lugar de inventar una aldea aislada dentro del juego como antes.
+
+
+Se creó 1 archivo,se editaron 8 archivos,ejecutó 8 comandos
+La integración principal está hecha: el juego ahora conoce el perfil, la run seed-driven, la aldea inicial generada y la afinidad secundaria. Voy a compilar estáticamente ahora; espero algunos errores pequeños porque cambié constructores compartidos como BattleRequest y GameConfig.
+
+
+Se editó 1 archivo,2 solicitudes aprobadas,ejecutó 2 comandos
+El analyzer solo encontró una API Flutter deprecada; ya la corregí. Antes de cerrar, voy a fortalecer la parte de “todos los ninjas en DB”: ahora mismo guardo identidad/rol/alineación, pero falta guardar stats. Eso sí estaba pedido explícitamente, así que lo añado antes de validar todo.
+
+
+Se editaron 5 archivos,2 solicitudes rechazadas,ejecutó 3 comandos
+El validador con dart/flutter fue rechazado por el sistema de aprobaciones porque se alcanzó el límite de uso de Codex, así que no voy a intentar rodearlo con otro comando equivalente. Sigo con revisión estática manual y lecturas de archivos; al final dejaré claro qué no pude ejecutar.
+
+
+Se creó 1 archivo,se editaron 6 archivos,ejecutó 7 comandos
+El archivo de base de datos subió a 238 líneas. Sigue bajo el límite duro, pero está por encima del objetivo del proyecto, así que lo voy a partir: ShinobiDatabase queda como conexión/esquema base, y el almacenamiento del first demo va a un store enfocado.
+
+
+Se creó 1 archivo,se editaron 3 archivos,ejecutó 6 comandos
+Procesado durante 22m 12s
+Me falta una parte del brief: practicar jutsus en el overworld. No voy a dejarlo solo como texto en el HUD. Voy a añadir botones de práctica desde el overlay: gastan chakra, suben EXP de jutsu y muestran reducción de sellos según el config de training.
+
+
+Se editaron 10 archivos,ejecutó 10 comandos
+Selected model is at capacity. Please try a different model.
+
+And these are the task Codex was executing: (He stopped in the first one, as I said, I ran out of tokens)
+
+1) Inspect current app, config, database, and game seams
+
+2) Add modular YAML configs for brand, character creation, world run, villages, exam, training, passive simulation
+
+3) Implement config models and loader wiring
+
+4) Implement splash/menu/character creation flow
+
+5) Implement seeded world generation and Drift persistence
+
+6) Integrate created profile/world into overworld HUD and jutsu practice placeholder
+
+7) Validate format, analyze, tests, build, and file sizes
