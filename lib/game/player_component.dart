@@ -70,7 +70,8 @@ class PlayerComponent extends PositionComponent
     }
 
     // Include joystick movement if keyboard is not active
-    if (direction.isZero() && game.joystick.direction != JoystickDirection.idle) {
+    if (direction.isZero() &&
+        game.joystick.direction != JoystickDirection.idle) {
       direction = game.joystick.relativeDelta;
     }
 

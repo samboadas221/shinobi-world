@@ -1,0 +1,9 @@
+summon_contract:
+  id: frogs
+  display_name: Frog Contract
+  summons:
+    - id: scout_frog
+      display_name: Scout Frog
+      chakra_cost: 20
+      cooldown_seconds: 45
+      stats: { health: 35, speed: 16, attack: 4 }

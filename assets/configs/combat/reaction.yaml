@@ -1,0 +1,9 @@
+reaction_window:
+  duration_seconds: 2.5
+  input_difficulty:
+    button_count: 3
+    button_pool: [up, down, left, right]
+  lethal_threshold_ratio: 0.85
+  outcomes:
+    evade_timing_seconds: 1.4
+    counter_timing_seconds: 0.8

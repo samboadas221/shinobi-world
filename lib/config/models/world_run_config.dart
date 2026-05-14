@@ -9,6 +9,8 @@ class WorldRunConfig {
     required this.villageCount,
     required this.villageSize,
     required this.villageNamePool,
+    required this.coordinateMaxX,
+    required this.coordinateMaxY,
     required this.rogue,
     required this.names,
   });
@@ -20,6 +22,8 @@ class WorldRunConfig {
       villageCount: CountRange.fromYaml(run['village_count'] as YamlMap),
       villageSize: CountRange.fromYaml(run['village_size'] as YamlMap),
       villageNamePool: readStringList(run, 'village_name_pool'),
+      coordinateMaxX: readDouble(run, 'coordinate_max_x'),
+      coordinateMaxY: readDouble(run, 'coordinate_max_y'),
       rogue: RogueGenerationConfig.fromYaml(run['rogue_ninja'] as YamlMap),
       names: NpcNameConfig.fromYaml(run['npc_names'] as YamlMap),
     );
@@ -29,6 +33,8 @@ class WorldRunConfig {
   final CountRange villageCount;
   final CountRange villageSize;
   final List<String> villageNamePool;
+  final double coordinateMaxX;
+  final double coordinateMaxY;
   final RogueGenerationConfig rogue;
   final NpcNameConfig names;
 }

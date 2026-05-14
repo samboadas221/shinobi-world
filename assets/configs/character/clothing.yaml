@@ -1,0 +1,20 @@
+clothing:
+  slots:
+    jacket:
+      label: Jacket
+      options: [Training Jacket, Short Cloak, Academy Vest]
+    pants:
+      label: Pants
+      options: [Utility Pants, Wrapped Leggings, Field Shorts]
+    sandals:
+      label: Sandals
+      options: [Shinobi Sandals, Light Boots, Training Shoes]
+    accessory:
+      label: Accessory
+      options: [Headband, Arm Wraps, Utility Pouch]
+  colors:
+    - { label: Forest, value: "#2F6F4E" }
+    - { label: Ember, value: "#C84C31" }
+    - { label: Indigo, value: "#4257A8" }
+    - { label: Sand, value: "#B9995D" }
+    - { label: Slate, value: "#53616F" }

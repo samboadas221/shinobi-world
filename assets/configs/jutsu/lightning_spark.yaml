@@ -1,0 +1,1 @@
+jutsu: { id: lightning_spark, display_name: Lightning Spark, chakra_nature: lightning, damage: 18, chakra_cost: 12, hand_seals: [rat, tiger], cast_time_seconds: 0.8 }

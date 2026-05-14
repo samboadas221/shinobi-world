@@ -1,0 +1,1 @@
+jutsu: { id: gale_push, display_name: Gale Push, chakra_nature: wind, damage: 12, chakra_cost: 12, hand_seals: [ram, bird], cast_time_seconds: 0.7 }

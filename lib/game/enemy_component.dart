@@ -9,11 +9,7 @@ class EnemyComponent extends PositionComponent {
     required this.config,
     required this.knownJutsu,
     required Vector2 spawnPosition,
-  }) : super(
-         position: spawnPosition,
-         size: config.size,
-         anchor: Anchor.center,
-       );
+  }) : super(position: spawnPosition, size: config.size, anchor: Anchor.center);
 
   final EnemyConfig config;
   final List<JutsuConfig> knownJutsu;

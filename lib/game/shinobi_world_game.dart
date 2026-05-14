@@ -11,9 +11,9 @@ import '../combat/battle_result.dart';
 import '../config/game_config.dart';
 import '../config/models/enemy_config.dart';
 import '../config/models/jutsu_config.dart';
-import '../config/models/world_config.dart';
 import '../data/shinobi_database.dart';
 import '../jutsu/jutsu_loadout_selector.dart';
+import '../jutsu/overworld_practice_controller.dart';
 import '../world/day_night_cycle.dart';
 import '../world/encounter_detector.dart';
 import '../world/generated_world_run.dart';
@@ -44,21 +44,18 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
 
   late final GeneratedVillage _spawnVillage;
   late final List<JutsuConfig> playerJutsu;
-  late final EnemyConfig _enemyConfig;
-  late final List<JutsuConfig> _enemyJutsu;
+  late EnemyConfig _enemyConfig;
+  late List<JutsuConfig> _enemyJutsu;
   late final PlayerComponent player;
   EnemyComponent? _collidingEnemy;
   late final JoystickComponent joystick;
+  late final OverworldPracticeController _practice;
   late int _currentHealth;
-  late int _currentChakra;
   late int _enemyHealth;
   late int _enemyChakra;
-  final Map<String, int> _jutsuExp = {};
   double _encounterCooldown = 0;
-  double _regenElapsed = 0;
   bool _encounterStarted = false;
   String _databaseStatus = 'Preparing local database';
-  String _practiceLog = '';
 
   @override
   Future<void> onLoad() async {
@@ -66,7 +63,12 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     _spawnVillage = run.startingVillage;
     _chooseLoadouts();
     _currentHealth = config.player.maxHealth;
-    _currentChakra = config.player.maxChakra;
+    _practice = OverworldPracticeController(
+      player: config.player,
+      training: config.training,
+      profile: profile,
+      jutsu: playerJutsu,
+    );
 
     await _loadWorld();
     await _prepareDatabase();
@@ -94,29 +96,23 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
 
     // Persist health/chakra changes
     _currentHealth = result.playerEndHealth;
-    _currentChakra = result.playerEndChakra;
+    _practice.currentChakra = result.playerEndChakra;
 
     // If defeated, reset for demo purposes
     if (result.defeated) {
       _currentHealth = config.player.maxHealth;
-      _currentChakra = config.player.maxChakra;
+      _practice.currentChakra = config.player.maxChakra;
     }
+    resumeEngine();
     _publishState();
   }
 
   /// Returns the display name of the practiced jutsu, or null if
   /// the player doesn't have enough chakra.
   String? practiceJutsu(String jutsuId) {
-    final jutsu = playerJutsu.firstWhere((item) => item.id == jutsuId);
-    final cost = _practiceCost(jutsu);
-    if (_currentChakra < cost) {
-      return null;
-    }
-    _currentChakra -= cost;
-    _jutsuExp[jutsu.id] = (_jutsuExp[jutsu.id] ?? 0) + config.training.jutsuExpPerCast;
-    _practiceLog = '${jutsu.displayName} practiced';
+    final result = _practice.practiceJutsu(jutsuId);
     _publishState();
-    return jutsu.displayName;
+    return result;
   }
 
   void updateRun(GeneratedWorldRun newRun) {
@@ -125,10 +121,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
   }
 
   Future<void> _loadWorld() async {
-    final map = ProceduralWorldMap(
-      config: config.world.map,
-      run: run,
-    );
+    final map = ProceduralWorldMap(config: config.world.map, run: run);
     world.add(map);
 
     player = PlayerComponent(
@@ -143,7 +136,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     camera.viewfinder.anchor = Anchor.center;
     camera.viewfinder.zoom = config.world.map.cameraZoom;
     camera.follow(player, snap: true);
-    
+
     // Set bounds
     camera.setBounds(
       Rectangle.fromLTWH(
@@ -197,15 +190,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
   }
 
   void _regenChakra(double dt) {
-    if (_currentChakra >= config.player.maxChakra) {
-      return;
-    }
-    _regenElapsed += dt;
-    if (_regenElapsed >= config.training.chakraRegenIntervalSeconds) {
-      _regenElapsed = 0;
-      _currentChakra = (_currentChakra + config.training.chakraRegenPerTick)
-          .clamp(0, config.player.maxChakra);
-    }
+    _practice.regen(dt);
   }
 
   void _updateEncounter(double dt) {
@@ -237,6 +222,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     _enemyChakra = _enemyConfig.stats['chakra']!;
 
     _encounterStarted = true;
+    player.resetMovement();
     encounterRequest.value = BattleRequest(
       player: config.player,
       playerName: profile.name,
@@ -245,12 +231,13 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
       secondaryCostMultiplier: profile.secondaryChakraCostMultiplier,
       playerJutsu: playerJutsu,
       playerCurrentHealth: _currentHealth,
-      playerCurrentChakra: _currentChakra,
+      playerCurrentChakra: _practice.currentChakra,
       enemy: _enemyConfig,
       enemyJutsu: _enemyJutsu,
       enemyCurrentHealth: _enemyHealth,
       enemyCurrentChakra: _enemyChakra,
     );
+    pauseEngine();
   }
 
   void _publishState() {
@@ -266,36 +253,13 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
       playerChakraNature: profile.naturalNature,
       playerSecondaryNature: profile.secondaryNature,
       playerJutsuNames: playerJutsu.map((jutsu) => jutsu.displayName).toList(),
-      currentChakra: _currentChakra,
+      currentChakra: _practice.currentChakra,
       maxChakra: config.player.maxChakra,
-      practiceLog: _practiceLog,
-      practiceJutsus: _practiceStates(),
+      practiceLog: _practice.practiceLog,
+      practiceJutsus: _practice.practiceStates(),
       enemyName: _enemyConfig.displayName,
       enemyJutsuNames: _enemyJutsu.map((jutsu) => jutsu.displayName).toList(),
       databaseStatus: _databaseStatus,
     );
-  }
-
-  List<JutsuPracticeState> _practiceStates() {
-    return playerJutsu.map((jutsu) {
-      final exp = _jutsuExp[jutsu.id] ?? 0;
-      final level = 1 + exp ~/ config.training.sealReductionLevelInterval;
-      final seals = jutsu.handSeals.length - (level - 1);
-      return JutsuPracticeState(
-        id: jutsu.id,
-        name: jutsu.displayName,
-        cost: _practiceCost(jutsu),
-        level: level,
-        requiredSeals: max(config.training.minimumRequiredSeals, seals),
-      );
-    }).toList();
-  }
-
-  int _practiceCost(JutsuConfig jutsu) {
-    var cost = jutsu.chakraCost * config.training.chakraPracticeCostMultiplier;
-    if (jutsu.chakraNature == profile.secondaryNature) {
-      cost *= profile.secondaryChakraCostMultiplier;
-    }
-    return cost.ceil();
   }
 }

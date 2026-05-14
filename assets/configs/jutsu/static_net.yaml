@@ -1,0 +1,1 @@
+jutsu: { id: static_net, display_name: Static Net, chakra_nature: lightning, damage: 15, chakra_cost: 15, hand_seals: [snake, rat, dog], cast_time_seconds: 1.0 }

@@ -58,41 +58,44 @@ class _DemoGameScreenState extends State<DemoGameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _game.encounterRequest,
-      builder: (context, encounter, _) {
-        if (encounter != null) {
-          return CombatScreen(
-            request: encounter,
-            config: widget.config.combat,
-            onCombatEnd: _game.finishEncounter,
-          );
-        }
-        return Scaffold(
-          body: Stack(
-            children: [
-              GameWidget(game: _game),
-              DemoHud(
-                stateListenable: _game.demoState,
-                onPracticeJutsu: _onPracticeJutsu,
-              ),
-              if (_practiceEffectJutsu != null)
-                Positioned(
-                  bottom: 120,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: PracticeEffectOverlay(
-                      key: ValueKey(_practiceEffectJutsu),
-                      jutsuName: _practiceEffectJutsu!,
-                      onDismissed: _dismissPracticeEffect,
-                    ),
-                  ),
-                ),
-            ],
+    return Scaffold(
+      body: Stack(
+        children: [
+          GameWidget(game: _game),
+          DemoHud(
+            stateListenable: _game.demoState,
+            onPracticeJutsu: _onPracticeJutsu,
           ),
-        );
-      },
+          if (_practiceEffectJutsu != null)
+            Positioned(
+              bottom: 120,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: PracticeEffectOverlay(
+                  key: ValueKey(_practiceEffectJutsu),
+                  jutsuName: _practiceEffectJutsu!,
+                  onDismissed: _dismissPracticeEffect,
+                ),
+              ),
+            ),
+          ValueListenableBuilder(
+            valueListenable: _game.encounterRequest,
+            builder: (context, encounter, _) {
+              if (encounter == null) {
+                return const SizedBox.shrink();
+              }
+              return Positioned.fill(
+                child: CombatScreen(
+                  request: encounter,
+                  config: widget.config.combat,
+                  onCombatEnd: _game.finishEncounter,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

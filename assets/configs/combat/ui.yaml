@@ -1,0 +1,8 @@
+combat_ui:
+  screen_title: Combat Encounter
+  initial_log: Collision encounter started
+  actions:
+    attack: Attack
+    jutsu: Jutsu
+    item: Item
+    flee: Flee

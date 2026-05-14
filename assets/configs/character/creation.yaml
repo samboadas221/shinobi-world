@@ -1,0 +1,33 @@
+creation:
+  screen_title: Character Creation
+  default_name: New Shinobi
+  name_pool: [Aki, Ren, Sora, Mika, Taro, Hana, Rei, Kaito]
+  gender_options: [male, female]
+  point_roll:
+    min: 5
+    max: 25
+  natural_natures: [fire, water, wind, earth, lightning]
+  secondary_affinity:
+    chakra_cost_multiplier: 1.25
+  ability_points:
+    min_value: 0
+    max_value: 10
+    abilities:
+      speed: { label: Speed }
+      max_chakra: { label: Max Chakra }
+      chakra_control: { label: Chakra Control }
+      taijutsu: { label: Taijutsu }
+      ninjutsu: { label: Ninjutsu }
+  reroll:
+    label: Re-generate
+    icon_name: casino
+  submit_label: Start Run
+  ui_labels:
+    name: Name
+    gender: Gender
+    natural_nature: Natural Nature
+    secondary_affinity: Secondary Affinity
+    unspent_points: Unspent Points
+    ability_points: Ability Points
+    clothing: Clothing
+    clothing_color: Clothing Color

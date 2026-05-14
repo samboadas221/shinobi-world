@@ -1,0 +1,1 @@
+jutsu: { id: water_bullet, display_name: Water Bullet, chakra_nature: water, damage: 18, chakra_cost: 11, hand_seals: [snake, ram], cast_time_seconds: 0.9 }

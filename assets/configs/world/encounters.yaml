@@ -1,0 +1,4 @@
+encounters:
+  collision_starts_combat: true
+  collision_padding: 2
+  retrigger_cooldown_seconds: 1.5

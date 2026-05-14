@@ -1,0 +1,5 @@
+exam:
+  genin_exam_days_until: 10
+  exam_type: combat
+  killing_forbidden: true
+  accidental_kill_allowed: true

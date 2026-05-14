@@ -1,0 +1,1 @@
+jutsu: { id: mist_step, display_name: Mist Step, chakra_nature: water, damage: 10, chakra_cost: 13, hand_seals: [ram, dog], cast_time_seconds: 0.7 }

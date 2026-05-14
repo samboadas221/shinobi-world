@@ -1,0 +1,8 @@
+training:
+  field_boost_percent: 20
+  chakra_practice_cost_multiplier: 1.0
+  jutsu_exp_per_cast: 1
+  seal_reduction_level_interval: 3
+  minimum_required_seals: 1
+  chakra_regen_per_tick: 3
+  chakra_regen_interval_seconds: 1.5

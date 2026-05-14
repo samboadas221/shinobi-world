@@ -1,4 +1,5 @@
 import 'package:flame/components.dart';
+import 'package:flutter/material.dart';
 import 'package:yaml/yaml.dart';
 
 import 'yaml_readers.dart';
@@ -72,6 +73,8 @@ class WorldMapConfig {
     required this.tileSize,
     required this.cameraZoom,
     required this.bounds,
+    required this.visuals,
+    required this.layout,
   });
 
   factory WorldMapConfig.fromYaml(YamlMap yaml) {
@@ -84,12 +87,62 @@ class WorldMapConfig {
         readDouble(bounds, 'width'),
         readDouble(bounds, 'height'),
       ),
+      visuals: WorldMapVisualConfig.fromYaml(map['visuals'] as YamlMap),
+      layout: WorldMapLayoutConfig.fromYaml(map['layout'] as YamlMap),
     );
   }
 
   final double tileSize;
   final double cameraZoom;
   final Vector2 bounds;
+  final WorldMapVisualConfig visuals;
+  final WorldMapLayoutConfig layout;
+}
+
+class WorldMapVisualConfig {
+  const WorldMapVisualConfig({
+    required this.grassColor,
+    required this.roadColor,
+    required this.buildingColor,
+  });
+
+  factory WorldMapVisualConfig.fromYaml(YamlMap yaml) {
+    return WorldMapVisualConfig(
+      grassColor: readHexColor(yaml, 'grass_color'),
+      roadColor: readHexColor(yaml, 'road_color'),
+      buildingColor: readHexColor(yaml, 'building_color'),
+    );
+  }
+
+  final Color grassColor;
+  final Color roadColor;
+  final Color buildingColor;
+}
+
+class WorldMapLayoutConfig {
+  const WorldMapLayoutConfig({
+    required this.roadLength,
+    required this.roadWidth,
+    required this.buildingsPerVillage,
+    required this.buildingSize,
+    required this.buildingScatterRadius,
+  });
+
+  factory WorldMapLayoutConfig.fromYaml(YamlMap yaml) {
+    return WorldMapLayoutConfig(
+      roadLength: readDouble(yaml, 'road_length'),
+      roadWidth: readDouble(yaml, 'road_width'),
+      buildingsPerVillage: readInt(yaml, 'buildings_per_village'),
+      buildingSize: readDouble(yaml, 'building_size'),
+      buildingScatterRadius: readDouble(yaml, 'building_scatter_radius'),
+    );
+  }
+
+  final double roadLength;
+  final double roadWidth;
+  final int buildingsPerVillage;
+  final double buildingSize;
+  final double buildingScatterRadius;
 }
 
 class EncounterConfig {

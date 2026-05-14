@@ -1,0 +1,6 @@
+turns:
+  turn_duration_seconds: 18
+  speed_order_divisor: 10
+  preview_participants:
+    - { id: player, display_name: Player, speed: 14 }
+    - { id: enemy, display_name: Enemy, speed: 10 }

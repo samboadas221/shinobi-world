@@ -1,0 +1,4 @@
+damage:
+  basic_attack_multiplier: 1.0
+  defense_reduction_multiplier: 0.5
+  minimum_damage: 1

@@ -1,13 +1,13 @@
 import 'dart:math';
 import 'package:flame/components.dart';
 import '../config/models/enemy_config.dart';
+import '../jutsu/jutsu_loadout_selector.dart';
 import 'enemy_component.dart';
 import 'shinobi_world_game.dart';
 
-class NpcManagerComponent extends Component with HasGameReference<ShinobiWorldGame> {
-  NpcManagerComponent({
-    required this.configs,
-  });
+class NpcManagerComponent extends Component
+    with HasGameReference<ShinobiWorldGame> {
+  NpcManagerComponent({required this.configs});
 
   final List<EnemyConfig> configs;
   final Random _random = Random();
@@ -21,9 +21,11 @@ class NpcManagerComponent extends Component with HasGameReference<ShinobiWorldGa
     for (final config in configs) {
       _activeEnemies[config.id] = [];
     }
-    
-    // Check every 2 seconds for spawn/despawn
-    _spawnTimer = Timer(2.0, onTick: _updateNpcs, repeat: true);
+
+    final interval = configs
+        .map((config) => config.spawn.spawnCheckSeconds)
+        .reduce(min);
+    _spawnTimer = Timer(interval, onTick: _updateNpcs, repeat: true);
   }
 
   @override
@@ -34,7 +36,12 @@ class NpcManagerComponent extends Component with HasGameReference<ShinobiWorldGa
   void _updateNpcs() {
     final playerPos = game.player.position;
     final viewportSize = game.camera.viewport.size;
-    final maxDespawnDist = viewportSize.length * 1.5;
+    final maxDespawnDist = configs
+        .map(
+          (config) =>
+              viewportSize.length * config.spawn.despawnDistanceMultiplier,
+        )
+        .reduce(max);
 
     // 1. Despawn enemies that are too far away
     for (final config in configs) {
@@ -51,12 +58,8 @@ class NpcManagerComponent extends Component with HasGameReference<ShinobiWorldGa
     // 2. Spawn new enemies
     for (final config in configs) {
       final activeList = _activeEnemies[config.id]!;
-      // TODO: Read max_active from EnemyConfig if it existed. Defaulting to 3.
-      final maxActive = 3; 
-      
-      if (activeList.length < maxActive) {
-        // Spawn chance based on arbitrary rate, e.g., 10% per 2 seconds
-        if (_random.nextDouble() < 0.1) {
+      if (activeList.length < config.spawn.maxActive) {
+        if (_random.nextDouble() < config.spawn.spawnChancePerCheck) {
           _spawnEnemy(config);
         }
       }
@@ -65,21 +68,25 @@ class NpcManagerComponent extends Component with HasGameReference<ShinobiWorldGa
 
   void _spawnEnemy(EnemyConfig config) {
     final playerPos = game.player.position;
-    final viewportSize = game.camera.viewport.size;
-    
+
     // Spawn outside the viewport but inside despawn radius
     final angle = _random.nextDouble() * 2 * pi;
-    final distance = (viewportSize.length / 2) + 100 + _random.nextDouble() * 200;
-    
-    final spawnPos = playerPos + Vector2(cos(angle) * distance, sin(angle) * distance);
+    final distance =
+        config.spawn.spawnDistanceMin +
+        _random.nextDouble() *
+            (config.spawn.spawnDistanceMax - config.spawn.spawnDistanceMin);
+
+    final spawnPos =
+        playerPos + Vector2(cos(angle) * distance, sin(angle) * distance);
 
     // Keep within world bounds
     final bounds = game.config.world.map.bounds;
     spawnPos.x = spawnPos.x.clamp(0.0, bounds.x);
     spawnPos.y = spawnPos.y.clamp(0.0, bounds.y);
 
-    // Pick random jutsu loadout
-    final enemyJutsu = game.config.jutsus.take(2).toList(); // Simplified for now
+    final enemyJutsu = JutsuLoadoutSelector(
+      _random,
+    ).chooseEnemyJutsu(config: config, allJutsu: game.config.jutsus);
 
     final enemy = EnemyComponent(
       config: config,

@@ -82,8 +82,8 @@ class WorldRunGenerator {
       size: size,
       sizeLabel: tier.label,
       adultPopulation: _rollWith(random, tier.adultPopulation),
-      x: random.nextDouble() * 16000,
-      y: random.nextDouble() * 16000,
+      x: random.nextDouble() * runConfig.coordinateMaxX,
+      y: random.nextDouble() * runConfig.coordinateMaxY,
     );
   }
 

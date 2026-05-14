@@ -1,0 +1,1 @@
+jutsu: { id: wind_slash, display_name: Wind Slash, chakra_nature: wind, damage: 17, chakra_cost: 10, hand_seals: [bird, tiger], cast_time_seconds: 0.8 }

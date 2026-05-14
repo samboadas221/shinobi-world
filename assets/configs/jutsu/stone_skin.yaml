@@ -1,0 +1,1 @@
+jutsu: { id: stone_skin, display_name: Stone Skin, chakra_nature: earth, damage: 7, chakra_cost: 12, hand_seals: [boar, dog], cast_time_seconds: 0.8 }

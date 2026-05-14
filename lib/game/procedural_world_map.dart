@@ -5,16 +5,15 @@ import '../config/models/world_config.dart';
 import '../world/generated_world_run.dart';
 
 class ProceduralWorldMap extends PositionComponent {
-  ProceduralWorldMap({
-    required this.config,
-    required this.run,
-  }) : super(size: config.bounds);
+  ProceduralWorldMap({required this.config, required this.run})
+    : super(size: config.bounds);
 
   final WorldMapConfig config;
   final GeneratedWorldRun run;
-  final Paint _grassPaint = Paint()..color = const Color(0xFF4C8F4C);
-  final Paint _roadPaint = Paint()..color = const Color(0xFF8B6C44);
-  final Paint _buildingPaint = Paint()..color = const Color(0xFF555555);
+  late final Paint _grassPaint = Paint()..color = config.visuals.grassColor;
+  late final Paint _roadPaint = Paint()..color = config.visuals.roadColor;
+  late final Paint _buildingPaint = Paint()
+    ..color = config.visuals.buildingColor;
 
   final List<Rect> _buildings = [];
   final List<Rect> _roads = [];
@@ -33,22 +32,33 @@ class ProceduralWorldMap extends PositionComponent {
       final cy = village.y;
 
       // Generate a main road
-      _roads.add(Rect.fromCenter(
-        center: Offset(cx, cy),
-        width: 600,
-        height: 60,
-      ));
-      _roads.add(Rect.fromCenter(
-        center: Offset(cx, cy),
-        width: 60,
-        height: 600,
-      ));
+      _roads.add(
+        Rect.fromCenter(
+          center: Offset(cx, cy),
+          width: config.layout.roadLength,
+          height: config.layout.roadWidth,
+        ),
+      );
+      _roads.add(
+        Rect.fromCenter(
+          center: Offset(cx, cy),
+          width: config.layout.roadWidth,
+          height: config.layout.roadLength,
+        ),
+      );
 
-      // Generate some buildings
-      for (var i = 0; i < 10; i++) {
-        final bx = cx + (random.nextDouble() * 800 - 400);
-        final by = cy + (random.nextDouble() * 800 - 400);
-        _buildings.add(Rect.fromLTWH(bx, by, 80, 80));
+      for (var i = 0; i < config.layout.buildingsPerVillage; i++) {
+        final scatter = config.layout.buildingScatterRadius;
+        final bx = cx + (random.nextDouble() * scatter * 2 - scatter);
+        final by = cy + (random.nextDouble() * scatter * 2 - scatter);
+        _buildings.add(
+          Rect.fromLTWH(
+            bx,
+            by,
+            config.layout.buildingSize,
+            config.layout.buildingSize,
+          ),
+        );
       }
     }
   }

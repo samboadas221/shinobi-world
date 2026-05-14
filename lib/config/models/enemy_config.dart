@@ -17,6 +17,7 @@ class EnemyConfig {
     required this.jutsuCount,
     required this.usableJutsuPool,
     required this.ai,
+    required this.spawn,
   });
 
   factory EnemyConfig.fromYaml(YamlMap yaml) {
@@ -33,6 +34,7 @@ class EnemyConfig {
       jutsuCount: CountRange.fromYaml(enemy['jutsu_count'] as YamlMap),
       usableJutsuPool: readStringList(enemy, 'usable_jutsu_pool'),
       ai: EnemyAiConfig.fromYaml(enemy['ai'] as YamlMap),
+      spawn: EnemySpawnConfig.fromYaml(enemy['spawn'] as YamlMap),
     );
   }
 
@@ -46,6 +48,7 @@ class EnemyConfig {
   final CountRange jutsuCount;
   final List<String> usableJutsuPool;
   final EnemyAiConfig ai;
+  final EnemySpawnConfig spawn;
 }
 
 class EnemyAiConfig {
@@ -66,4 +69,39 @@ class EnemyAiConfig {
   final double aggression;
   final double jutsuPreference;
   final double retreatHealthRatio;
+}
+
+class EnemySpawnConfig {
+  const EnemySpawnConfig({
+    required this.spawnRatePerMinute,
+    required this.maxActive,
+    required this.spawnCheckSeconds,
+    required this.spawnChancePerCheck,
+    required this.spawnDistanceMin,
+    required this.spawnDistanceMax,
+    required this.despawnDistanceMultiplier,
+  });
+
+  factory EnemySpawnConfig.fromYaml(YamlMap yaml) {
+    return EnemySpawnConfig(
+      spawnRatePerMinute: readDouble(yaml, 'spawn_rate_per_minute'),
+      maxActive: readInt(yaml, 'max_active'),
+      spawnCheckSeconds: readDouble(yaml, 'spawn_check_seconds'),
+      spawnChancePerCheck: readDouble(yaml, 'spawn_chance_per_check'),
+      spawnDistanceMin: readDouble(yaml, 'spawn_distance_min'),
+      spawnDistanceMax: readDouble(yaml, 'spawn_distance_max'),
+      despawnDistanceMultiplier: readDouble(
+        yaml,
+        'despawn_distance_multiplier',
+      ),
+    );
+  }
+
+  final double spawnRatePerMinute;
+  final int maxActive;
+  final double spawnCheckSeconds;
+  final double spawnChancePerCheck;
+  final double spawnDistanceMin;
+  final double spawnDistanceMax;
+  final double despawnDistanceMultiplier;
 }

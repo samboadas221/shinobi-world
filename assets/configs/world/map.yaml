@@ -1,0 +1,16 @@
+map:
+  tile_size: 16
+  camera_zoom: 2.4
+  bounds:
+    width: 16000
+    height: 16000
+  visuals:
+    grass_color: "#4C8F4C"
+    road_color: "#8B6C44"
+    building_color: "#555555"
+  layout:
+    road_length: 600
+    road_width: 60
+    buildings_per_village: 10
+    building_size: 80
+    building_scatter_radius: 400

@@ -1,0 +1,66 @@
+village_configuration:
+  size_tiers:
+    - size: 1
+      label: Small
+      roles:
+        kage: { min: 1, max: 1 }
+        anbu: { min: 1, max: 2 }
+        jounin: { min: 2, max: 4 }
+        chuunin: { min: 5, max: 8 }
+        genin: { min: 10, max: 16 }
+        child_ninja: { min: 12, max: 20 }
+        bingo_list: { min: 1, max: 2 }
+      adult_population: { min: 80, max: 140 }
+    - size: 2
+      label: Minor
+      roles:
+        kage: { min: 1, max: 1 }
+        anbu: { min: 2, max: 4 }
+        jounin: { min: 4, max: 8 }
+        chuunin: { min: 9, max: 16 }
+        genin: { min: 18, max: 28 }
+        child_ninja: { min: 22, max: 36 }
+        bingo_list: { min: 2, max: 4 }
+      adult_population: { min: 150, max: 260 }
+    - size: 3
+      label: Medium
+      roles:
+        kage: { min: 1, max: 1 }
+        anbu: { min: 4, max: 8 }
+        jounin: { min: 8, max: 14 }
+        chuunin: { min: 18, max: 28 }
+        genin: { min: 32, max: 48 }
+        child_ninja: { min: 40, max: 65 }
+        bingo_list: { min: 3, max: 6 }
+      adult_population: { min: 280, max: 480 }
+    - size: 4
+      label: Large
+      roles:
+        kage: { min: 1, max: 1 }
+        anbu: { min: 8, max: 14 }
+        jounin: { min: 15, max: 26 }
+        chuunin: { min: 30, max: 48 }
+        genin: { min: 55, max: 85 }
+        child_ninja: { min: 70, max: 110 }
+        bingo_list: { min: 5, max: 9 }
+      adult_population: { min: 500, max: 850 }
+    - size: 5
+      label: Great
+      roles:
+        kage: { min: 1, max: 1 }
+        anbu: { min: 14, max: 24 }
+        jounin: { min: 28, max: 45 }
+        chuunin: { min: 55, max: 90 }
+        genin: { min: 95, max: 150 }
+        child_ninja: { min: 130, max: 210 }
+        bingo_list: { min: 8, max: 14 }
+      adult_population: { min: 900, max: 1500 }
+  role_stats:
+    kage: { health: { min: 180, max: 240 }, chakra: { min: 180, max: 260 }, speed: { min: 22, max: 30 }, attack: { min: 24, max: 34 }, defense: { min: 22, max: 32 } }
+    anbu: { health: { min: 120, max: 170 }, chakra: { min: 110, max: 180 }, speed: { min: 18, max: 26 }, attack: { min: 18, max: 28 }, defense: { min: 16, max: 24 } }
+    jounin: { health: { min: 110, max: 160 }, chakra: { min: 100, max: 165 }, speed: { min: 16, max: 24 }, attack: { min: 16, max: 26 }, defense: { min: 14, max: 22 } }
+    chuunin: { health: { min: 80, max: 120 }, chakra: { min: 70, max: 115 }, speed: { min: 12, max: 18 }, attack: { min: 11, max: 18 }, defense: { min: 10, max: 16 } }
+    genin: { health: { min: 55, max: 85 }, chakra: { min: 45, max: 80 }, speed: { min: 8, max: 14 }, attack: { min: 7, max: 13 }, defense: { min: 6, max: 11 } }
+    child_ninja: { health: { min: 30, max: 50 }, chakra: { min: 25, max: 45 }, speed: { min: 5, max: 9 }, attack: { min: 3, max: 7 }, defense: { min: 3, max: 6 } }
+    bingo_list: { health: { min: 80, max: 150 }, chakra: { min: 70, max: 160 }, speed: { min: 12, max: 24 }, attack: { min: 12, max: 26 }, defense: { min: 10, max: 22 } }
+    rogue_ninja: { health: { min: 60, max: 140 }, chakra: { min: 50, max: 150 }, speed: { min: 9, max: 22 }, attack: { min: 9, max: 24 }, defense: { min: 7, max: 20 } }

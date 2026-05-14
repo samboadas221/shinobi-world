@@ -1,0 +1,23 @@
+player:
+  display_name: Young Shinobi
+  movement_speed: 92
+  size: { width: 12, height: 14 }
+  visual:
+    body_color: "#243B53"
+    headband_color: "#C84C31"
+  max_chakra: 100
+  max_health: 80
+  stats: { speed: 14, attack: 8, defense: 6 }
+  chakra_nature_pool: [fire, water, wind, earth, lightning]
+  starting_jutsu_count: { min: 3, max: 4 }
+  starter_jutsu_pool:
+    - fireball
+    - ember_shuriken
+    - water_bullet
+    - mist_step
+    - wind_slash
+    - gale_push
+    - earth_spike
+    - stone_skin
+    - lightning_spark
+    - static_net

@@ -1,0 +1,15 @@
+brand:
+  app_title: Shinobi World
+  company_name: Boadas Corp
+  logo_asset: assets/images/boadas_corp_logo.png
+  splash_duration_seconds: 2
+  theme_seed_color: "#2F6F4E"
+menu:
+  title: Shinobi World
+  subtitle: First demo
+  actions:
+    play: Play
+    settings: Settings
+    exit: Exit
+  settings_message: Settings are not available in this demo
+  exit_message: Exit requested

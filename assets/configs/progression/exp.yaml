@@ -1,0 +1,4 @@
+progression:
+  global_exp_multiplier: 1.0
+  rogue_path_exp_multiplier: 0.85
+  rank_thresholds: { academy: 0, genin: 100, chuunin: 400, jounin: 1000 }

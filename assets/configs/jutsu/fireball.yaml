@@ -1,0 +1,1 @@
+jutsu: { id: fireball, display_name: Fireball Jutsu, chakra_nature: fire, damage: 24, chakra_cost: 18, hand_seals: [tiger, horse, tiger], cast_time_seconds: 1.2 }

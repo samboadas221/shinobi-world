@@ -1,0 +1,5 @@
+cycle:
+  day_duration_seconds: 120
+  night_duration_seconds: 80
+  starting_phase: day
+  night_overlay_opacity: 0.32

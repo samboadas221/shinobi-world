@@ -1,0 +1,1 @@
+jutsu: { id: ember_shuriken, display_name: Ember Shuriken, chakra_nature: fire, damage: 16, chakra_cost: 10, hand_seals: [tiger, rat], cast_time_seconds: 0.8 }
