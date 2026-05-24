@@ -1,16 +1,206 @@
 map:
   tile_size: 16
   camera_zoom: 2.4
-  bounds:
-    width: 16000
-    height: 16000
+
+  # ── Map dimensions (in TILES, rolled once per seed) ──────────────────────
+  map_size:
+    width:  { min: 10000, max: 18000 }
+    height: { min: 10000, max: 18000 }
+
+  # ── Encounter / gameplay rules ────────────────────────────────────────────
+  # (Previously in encounters.yaml — now inline here)
+  gameplay:
+    collision_starts_combat: true
+    collision_padding: 2.0
+    retrigger_cooldown_seconds: 1.5
+
   visuals:
     grass_color: "#4C8F4C"
     road_color: "#8B6C44"
     building_color: "#555555"
+    dirt_road_color: "#C2A679"
+    stone_road_color: "#B0B5BC"
+    training_field_color: "#E5C158"
+
   layout:
-    road_length: 600
-    road_width: 60
-    buildings_per_village: 10
-    building_size: 80
-    building_scatter_radius: 400
+    # ── Zone proportions ────────────────────────────────────────────────────
+    # Wedge angles from core. Must sum to 1.0.
+    military_zone_ratio:    0.25
+    commercial_zone_ratio:  0.15
+    residential_zone_ratio: 0.60
+
+    # ── Inter-village highways ───────────────────────────────────────────────
+    stone_highway_threshold: 4000.0
+    inter_village_road_width: 32.0
+
+    # ── Village Generator ────────────────────────────────────────────────────
+    generator:
+
+      # Tier boundaries (village size integer 1–5)
+      small_max_size:  2
+      medium_max_size: 3
+
+      # ── Global settings ───────────────────────────────────────────────────
+      global:
+        num_spines: { min: 2, max: 4 }
+        spine_length_fraction: { min: 0.28, max: 0.58 }
+        straight_run_tiles: { min: 15, max: 40 }
+        spine_width_tiles: 2
+        branch_width_tiles: 1
+        num_branches_base: 6
+        num_branches_per_size: 4
+        branch_length_tiles: { min: 8, max: 29 }
+        # Minimum perpendicular distance between parallel roads (tiles).
+        min_road_spacing_tiles: 6
+        exit_road_width_tiles: 2
+
+      # ── Per-tier settings ─────────────────────────────────────────────────
+      # grid_cols / grid_rows: working grid size in TILES (rolled per village).
+      # grid_expand_per_attempt_tiles: tiles added to each axis on retry.
+      # target_houses: range — exact house count is rolled; ALL must be placed.
+      # mandatory buildings must fit or generation retries with larger grid.
+      # optional buildings are tried and silently skipped if no lot is found.
+
+      small:
+        grid_cols: { min: 50, max: 65 }
+        grid_rows: { min: 40, max: 55 }
+        grid_expand_per_attempt_tiles: 10
+
+        military_zone:
+          mandatory:
+            - type: kage_office
+              count: 1
+              tiles: { width: { min: 4, max: 6 }, height: { min: 3, max: 5 } }
+            - type: academy
+              count: 1
+              tiles: { width: { min: 4, max: 6 }, height: { min: 3, max: 5 } }
+            - type: training_field
+              count: 1
+              tiles: { width: { min: 6, max: 8 }, height: { min: 4, max: 6 } }
+            - type: library
+              count: 1
+              tiles: { width: { min: 2, max: 3 }, height: { min: 2, max: 3 } }
+          optional: []
+
+        commercial_zone:
+          mandatory:
+            - type: central_market
+              count: 1
+              tiles: { width: { min: 6, max: 8 }, height: { min: 5, max: 7 } }
+          optional:
+            - type: hair_store
+              count: 1
+              tiles: { width: { min: 2, max: 3 }, height: { min: 2, max: 3 } }
+            - type: cloth_store
+              count: 1
+              tiles: { width: { min: 2, max: 3 }, height: { min: 2, max: 3 } }
+            - type: supply_store
+              count: 1
+              tiles: { width: { min: 2, max: 3 }, height: { min: 2, max: 3 } }
+            - type: armor_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+
+        residential_zone:
+          house_tiles: { width: { min: 3, max: 7 }, height: { min: 2, max: 5 } }
+          target_houses: { min: 15, max: 30 }
+
+      medium:
+        grid_cols: { min: 85, max: 105 }
+        grid_rows: { min: 68, max: 85 }
+        grid_expand_per_attempt_tiles: 12
+
+        military_zone:
+          mandatory:
+            - type: kage_office
+              count: 1
+              tiles: { width: { min: 6, max: 8 }, height: { min: 4, max: 6 } }
+            - type: academy
+              count: 1
+              tiles: { width: { min: 6, max: 8 }, height: { min: 4, max: 6 } }
+            - type: training_field
+              count: 1
+              tiles: { width: { min: 8, max: 10 }, height: { min: 6, max: 8 } }
+            - type: library
+              count: 3
+              tiles: { width: { min: 2, max: 3 }, height: { min: 2, max: 3 } }
+          optional: []
+
+        commercial_zone:
+          mandatory:
+            - type: central_market
+              count: 1
+              tiles: { width: { min: 9, max: 12 }, height: { min: 7, max: 9 } }
+          optional:
+            - type: hair_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+            - type: cloth_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+            - type: supply_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+            - type: armor_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+            - type: weapon_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+            - type: library_store
+              count: 1
+              tiles: { width: { min: 3, max: 4 }, height: { min: 2, max: 3 } }
+
+        residential_zone:
+          house_tiles: { width: { min: 4, max: 9 }, height: { min: 3, max: 7 } }
+          target_houses: { min: 40, max: 70 }
+
+      large:
+        grid_cols: { min: 112, max: 130 }
+        grid_rows: { min: 90, max: 108 }
+        grid_expand_per_attempt_tiles: 14
+
+        military_zone:
+          mandatory:
+            - type: kage_office
+              count: 1
+              tiles: { width: { min: 9, max: 11 }, height: { min: 7, max: 9 } }
+            - type: academy
+              count: 1
+              tiles: { width: { min: 9, max: 11 }, height: { min: 7, max: 9 } }
+            - type: training_field
+              count: 1
+              tiles: { width: { min: 11, max: 13 }, height: { min: 9, max: 11 } }
+            - type: library
+              count: 5
+              tiles: { width: { min: 2, max: 4 }, height: { min: 2, max: 4 } }
+          optional: []
+
+        commercial_zone:
+          mandatory:
+            - type: central_market
+              count: 1
+              tiles: { width: { min: 12, max: 15 }, height: { min: 9, max: 11 } }
+          optional:
+            - type: hair_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+            - type: cloth_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+            - type: supply_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+            - type: armor_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+            - type: weapon_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+            - type: library_store
+              count: 1
+              tiles: { width: { min: 4, max: 5 }, height: { min: 3, max: 4 } }
+
+        residential_zone:
+          house_tiles: { width: { min: 3, max: 6 }, height: { min: 3, max: 6 } }
+          target_houses: { min: 80, max: 130 }

@@ -2,8 +2,13 @@ run_generation:
   seed: { min: 100000, max: 999999 }
   village_count: { min: 10, max: 20 }
   village_size: { min: 1, max: 5 }
-  coordinate_max_x: 16000
-  coordinate_max_y: 16000
+
+  # Units: TILES. These are converted to pixels in the generator.
+  # min_village_distance: minimum distance between any two villages.
+  # map_margin: minimum distance from any village to the map edge.
+  min_village_distance: 800
+  map_margin: 80
+
   village_name_pool:
     - Leaf Village
     - Sand Village
@@ -25,10 +30,12 @@ run_generation:
     - Mountain Village
     - Marsh Village
     - Harbor Village
+
   rogue_ninja:
     count_per_village: { min: 1, max: 3 }
     alignments: { bad: 0.45, neutral: 0.35, good: 0.2 }
     bingo_list_chance: 0.35
+
   npc_names:
     first: [Akio, Emi, Daichi, Yuna, Haru, Nori, Kaede, Riku, Mina, Shiro]
     clan: [Boadas, Kazan, Mori, Arashi, Tsuchi, Kawa, Hoshi, Kuro]

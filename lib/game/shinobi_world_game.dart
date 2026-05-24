@@ -22,10 +22,13 @@ import 'enemy_component.dart';
 import 'npc_manager_component.dart';
 import 'player_component.dart';
 import 'procedural_world_map.dart';
+import 'world_layout/world_layout_data.dart';
+import 'world_layout/world_layout_generator.dart';
 import 'package:flutter/material.dart' show Colors, Paint, EdgeInsets;
 import 'package:flame/experimental.dart';
 
-class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
+class ShinobiWorldGame extends FlameGame
+    with HasKeyboardHandlerComponents, HasCollisionDetection, ScrollDetector, ScaleDetector {
   ShinobiWorldGame({
     required this.config,
     required this.database,
@@ -37,18 +40,18 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
   final ShinobiDatabase database;
   final PlayerProfile profile;
   GeneratedWorldRun run;
+  late final WorldLayoutData layoutData;
   final ValueNotifier<DemoState> demoState = ValueNotifier(DemoState.empty());
   final ValueNotifier<BattleRequest?> encounterRequest = ValueNotifier(null);
   final DayNightCycle _cycle;
   final Random _random = Random();
 
-  late final GeneratedVillage _spawnVillage;
   late final List<JutsuConfig> playerJutsu;
   late EnemyConfig _enemyConfig;
   late List<JutsuConfig> _enemyJutsu;
   late final PlayerComponent player;
   EnemyComponent? _collidingEnemy;
-  late final JoystickComponent joystick;
+  JoystickComponent? joystick;
   late final OverworldPracticeController _practice;
   late int _currentHealth;
   late int _enemyHealth;
@@ -60,7 +63,6 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
-    _spawnVillage = run.startingVillage;
     _chooseLoadouts();
     _currentHealth = config.player.maxHealth;
     _practice = OverworldPracticeController(
@@ -91,7 +93,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     }
     _collidingEnemy = null;
     _encounterStarted = false;
-    _encounterCooldown = config.world.encounters.retriggerCooldown;
+    _encounterCooldown = config.world.map.encounters.retriggerCooldown;
     player.resetMovement();
 
     // Persist health/chakra changes
@@ -121,12 +123,28 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
   }
 
   Future<void> _loadWorld() async {
-    final map = ProceduralWorldMap(config: config.world.map, run: run);
+    const layoutGenerator = WorldLayoutGenerator();
+    layoutData = layoutGenerator.generateWorldLayout(
+      run: run,
+      mapConfig: config.world.map,
+    );
+
+    final map = ProceduralWorldMap(
+      config: config.world.map,
+      run: run,
+      layoutData: layoutData,
+    );
     world.add(map);
+
+    // Spawn player at the pre-calculated starting village core road/grass tile spawn point
+    final spawnPosition = Vector2(
+      layoutData.playerSpawnX,
+      layoutData.playerSpawnY,
+    );
 
     player = PlayerComponent(
       config: config.player,
-      spawnPosition: Vector2(_spawnVillage.x, _spawnVillage.y),
+      spawnPosition: spawnPosition,
     );
     world.add(player);
 
@@ -137,25 +155,55 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     camera.viewfinder.zoom = config.world.map.cameraZoom;
     camera.follow(player, snap: true);
 
-    // Set bounds
+    // Set bounds based on rolled tile size
+    final mapWidth = run.mapWidthTiles * config.world.map.tileSize;
+    final mapHeight = run.mapHeightTiles * config.world.map.tileSize;
     camera.setBounds(
       Rectangle.fromLTWH(
         0,
         0,
-        config.world.map.bounds.x,
-        config.world.map.bounds.y,
+        mapWidth,
+        mapHeight,
       ),
     );
 
-    joystick = JoystickComponent(
-      knob: CircleComponent(radius: 16, paint: Paint()..color = Colors.white54),
-      background: CircleComponent(
-        radius: 40,
-        paint: Paint()..color = Colors.black38,
-      ),
-      margin: const EdgeInsets.only(left: 32, bottom: 32),
-    );
-    camera.viewport.add(joystick);
+    final isDesktop = defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
+    if (!isDesktop) {
+      joystick = JoystickComponent(
+        knob: CircleComponent(radius: 16, paint: Paint()..color = Colors.white54),
+        background: CircleComponent(
+          radius: 40,
+          paint: Paint()..color = Colors.black38,
+        ),
+        margin: const EdgeInsets.only(left: 32, bottom: 32),
+      );
+      camera.viewport.add(joystick!);
+    }
+  }
+
+  @override
+  void onScroll(PointerScrollInfo info) {
+    var zoom = camera.viewfinder.zoom;
+    zoom += info.scrollDelta.global.y > 0 ? -0.1 : 0.1;
+    zoom = zoom.clamp(0.2, 5.0);
+    camera.viewfinder.zoom = zoom;
+  }
+
+  late double _startZoom;
+
+  @override
+  void onScaleStart(ScaleStartInfo info) {
+    _startZoom = camera.viewfinder.zoom;
+  }
+
+  @override
+  void onScaleUpdate(ScaleUpdateInfo info) {
+    var zoom = _startZoom * info.scale.global.x;
+    zoom = zoom.clamp(0.2, 5.0);
+    camera.viewfinder.zoom = zoom;
   }
 
   void _chooseLoadouts() {
@@ -201,7 +249,7 @@ class ShinobiWorldGame extends FlameGame with HasKeyboardHandlerComponents {
     if (_encounterStarted) {
       return;
     }
-    final detector = EncounterDetector(config.world.encounters);
+    final detector = EncounterDetector(config.world.map.encounters);
     final enemies = world.children.whereType<EnemyComponent>();
     EnemyComponent? collidingEnemy;
     for (final enemy in enemies) {

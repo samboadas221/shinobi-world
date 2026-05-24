@@ -35,29 +35,6 @@ class PassiveSimulationConfig {
   final int activeRadiusTiles;
 }
 
-class ExamConfig {
-  const ExamConfig({
-    required this.geninExamDaysUntil,
-    required this.examType,
-    required this.killingForbidden,
-    required this.accidentalKillAllowed,
-  });
-
-  factory ExamConfig.fromYaml(YamlMap yaml) {
-    final exam = yaml['exam'] as YamlMap;
-    return ExamConfig(
-      geninExamDaysUntil: readInt(exam, 'genin_exam_days_until'),
-      examType: readString(exam, 'exam_type'),
-      killingForbidden: exam['killing_forbidden'] as bool,
-      accidentalKillAllowed: exam['accidental_kill_allowed'] as bool,
-    );
-  }
-
-  final int geninExamDaysUntil;
-  final String examType;
-  final bool killingForbidden;
-  final bool accidentalKillAllowed;
-}
 
 class TrainingConfig {
   const TrainingConfig({

@@ -73,12 +73,15 @@ Domain files:
 - `lib/world/generated_world_run.dart`
 - `lib/config/models/world_run_config.dart`
 - `lib/config/models/village_population_config.dart`
+- `lib/game/world_layout/world_layout_generator.dart`
+- `lib/game/world_layout/building_layout_generator.dart`
+- `lib/game/world_layout/road_network_generator.dart`
 
 The world generator supports a staged first-demo flow:
 
-1. Generate starting village first.
+1. Generate starting village first using an iterative layout solver that dynamically scales the village grid to guarantee a 100% placement rate for critical structures.
 2. Enter the game quickly.
-3. Generate/store the remaining villages and NPCs in the background.
+3. Generate/store the remaining villages, inter-village highways, and NPCs in the background.
 
 NPCs are generated with role, village, alignment, bingo-list status, active state, and config-derived stats.
 

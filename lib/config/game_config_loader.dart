@@ -27,14 +27,8 @@ class GameConfigLoader {
       time: WorldTimeConfig.fromYaml(
         await _loadManifestMap(configs, 'world_time'),
       ),
-      villages: VillageConfig.listFromYaml(
-        await _loadManifestMap(configs, 'world_villages'),
-      ),
       map: WorldMapConfig.fromYaml(
         await _loadManifestMap(configs, 'world_map'),
-      ),
-      encounters: EncounterConfig.fromYaml(
-        await _loadManifestMap(configs, 'world_encounters'),
       ),
     );
 
@@ -56,7 +50,6 @@ class GameConfigLoader {
       passiveSimulation: PassiveSimulationConfig.fromYaml(
         await _loadManifestMap(configs, 'world_passive_simulation'),
       ),
-      exam: ExamConfig.fromYaml(await _loadManifestMap(configs, 'world_exam')),
       training: TrainingConfig.fromYaml(
         await _loadManifestMap(configs, 'world_training'),
       ),

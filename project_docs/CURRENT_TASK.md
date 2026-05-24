@@ -2,7 +2,7 @@
 
 ## Active Task
 
-Fix the overworld freeze/crash when the player collides with an enemy before the combat screen appears.
+Improve road generation: replace random-drift roads with human-like 90-degree turn roads, and add straight exit roads leading from each village toward every other village.
 
 ## Status
 
@@ -10,51 +10,35 @@ Completed.
 
 ## Progress
 
-- Read `boot.md`, `main_goal.txt`, and required `project_docs` startup files.
-- Confirmed user-reported bug: colliding/hitting an enemy freezes the overworld before battle UI appears.
-- Inspected enemy collision handling, `ShinobiWorldGame` encounter trigger, `DemoGameScreen`, and combat screen startup.
-- Fixed the combat transition by keeping `GameWidget` mounted and displaying `CombatScreen` as a full-screen overlay.
-- Paused the Flame engine when an encounter starts and resumed it when combat ends.
-- Reset player movement when combat starts so input does not remain stuck under the overlay.
-- User reported the freeze still happens and provided the real error:
-  `LateInitializationError: Field '_enemyConfig@74383151' has already been initialized`.
-- Identified root cause: `_enemyConfig` and `_enemyJutsu` were declared `late final` but are reassigned when the player collides with the active enemy.
-- Changed active enemy encounter fields from `late final` to mutable `late` fields.
-- Earlier validation before the root-cause field mutability fix:
-  - `dart format lib test`
-  - `flutter analyze`
-  - `flutter test`
-  - `flutter build windows --debug`
-- Attempted to rerun validation after the root-cause fix, but the escalation request was rejected by the app due to usage limits.
+- Replaced the random-drift wander logic in `_growRoad` with clean 90-degree turn logic:
+  - Spine roads (2-wide) go straight for 10–27 tiles then make a sharp 90-degree turn.
+  - Branch roads (1-wide) are perfectly straight — no turns at all.
+- Added `_growExitRoads`: for each other village in the world run, draws a straight 2-wide stone road from the village core to the grid edge in the dominant cardinal direction toward that village.
+  - *Fix:* When generating the starting village (where no other villages are known yet), it falls back to generating 4 exit roads in all cardinal directions.
+- Added `otherVillages` parameter to both `generateVillageLayout` and `_tryGenerate`.
+- Updated `world_layout_generator.dart` to pass the filtered other-village list.
+- Added a "Regenerate World" UI button on the top right of the screen for debug testing of layouts.
+- `flutter analyze`: No issues found.
+- `flutter test`: All 3 tests passed.
+- Windows Release: `build\windows\x64\runner\Release\shinobi_world.exe`
+- Android APK: `build\app\outputs\flutter-apk\app-release.apk` (54.4MB)
 
 ## Affected Files
 
+- `lib/game/world_layout/building_layout_generator.dart`
+- `lib/game/world_layout/world_layout_generator.dart`
 - `project_docs/CURRENT_TASK.md`
-- `lib/screens/demo_game_screen.dart`
-- `lib/game/shinobi_world_game.dart`
 - `project_docs/SESSION_LOG.md`
-- `project_docs/KNOWN_BUGS.md`
 
 ## Warnings
 
-- The worktree already contains many uncommitted changes unrelated to this documentation task.
-- `lib/game/shinobi_world_game.dart` is currently above the preferred 200-line target, though below the hard 500-line limit.
-- `lib/data/first_demo_store.dart` is also slightly above the preferred target.
-- Some generated Flutter desktop/IDE files are currently untracked.
-- `lib/game/shinobi_world_game.dart` had pre-existing uncommitted edits before this bug fix; only the encounter pause/resume and movement reset behavior was intentionally changed there during this task.
-- The actual crash was not the overlay lifecycle itself; it was a Dart `late final` reassignment crash in encounter state.
+None.
 
 ## Blockers
 
-None currently.
+None.
 
 ## Next Steps
 
-1. Rerun `dart format lib test`, `flutter analyze`, `flutter test`, and `flutter build windows --debug` when tool usage is available again.
-2. Manually verify in the running game that colliding with an enemy immediately shows the combat overlay.
-3. Consider adding a dedicated widget/integration regression test for the overworld-to-combat transition.
-4. Continue splitting `ShinobiWorldGame` into smaller coordinators when practical.
-
-## Completion State
-
-Code fix is complete. Post-fix validation is pending because tool escalation was rejected by the app usage limit.
+1. User to review the improved road layout and exit roads in the Windows build.
+2. Consider rendering exit roads in a distinct color (e.g. brighter stone) to make them visually distinguishable from internal roads.

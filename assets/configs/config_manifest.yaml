@@ -3,13 +3,10 @@ configs:
   character_creation: configs/character/creation.yaml
   character_clothing: configs/character/clothing.yaml
   world_time: configs/world/time.yaml
-  world_villages: configs/world/villages.yaml
   world_map: configs/world/map.yaml
-  world_encounters: configs/world/encounters.yaml
   world_run_generation: configs/world/run_generation.yaml
   world_village_configuration: configs/world/village_configuration.yaml
   world_passive_simulation: configs/world/passive_simulation.yaml
-  world_exam: configs/world/exam.yaml
   world_training: configs/world/training.yaml
   player_base: configs/player/base.yaml
   combat_turns: configs/combat/turns.yaml

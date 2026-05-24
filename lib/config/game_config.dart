@@ -21,7 +21,6 @@ class GameConfig {
     required this.worldRun,
     required this.villagePopulation,
     required this.passiveSimulation,
-    required this.exam,
     required this.training,
     required this.player,
     required this.combat,
@@ -38,7 +37,6 @@ class GameConfig {
   final WorldRunConfig worldRun;
   final VillagePopulationConfig villagePopulation;
   final PassiveSimulationConfig passiveSimulation;
-  final ExamConfig exam;
   final TrainingConfig training;
   final PlayerConfig player;
   final CombatConfig combat;

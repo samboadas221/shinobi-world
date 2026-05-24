@@ -17,12 +17,14 @@ class DemoGameScreen extends StatefulWidget {
     required this.database,
     required this.profile,
     required this.run,
+    required this.onRegenerateWorld,
   });
 
   final GameConfig config;
   final ShinobiDatabase database;
   final PlayerProfile profile;
   final GeneratedWorldRun run;
+  final VoidCallback onRegenerateWorld;
 
   @override
   State<DemoGameScreen> createState() => _DemoGameScreenState();
@@ -93,6 +95,19 @@ class _DemoGameScreenState extends State<DemoGameScreen> {
                 ),
               );
             },
+          ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: ElevatedButton.icon(
+              onPressed: widget.onRegenerateWorld,
+              icon: const Icon(Icons.refresh),
+              label: const Text('Regenerate World'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black87,
+                foregroundColor: Colors.white,
+              ),
+            ),
           ),
         ],
       ),

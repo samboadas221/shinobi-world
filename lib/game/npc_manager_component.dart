@@ -3,6 +3,7 @@ import 'package:flame/components.dart';
 import '../config/models/enemy_config.dart';
 import '../jutsu/jutsu_loadout_selector.dart';
 import 'enemy_component.dart';
+import 'procedural_world_map.dart';
 import 'shinobi_world_game.dart';
 
 class NpcManagerComponent extends Component
@@ -80,9 +81,23 @@ class NpcManagerComponent extends Component
         playerPos + Vector2(cos(angle) * distance, sin(angle) * distance);
 
     // Keep within world bounds
-    final bounds = game.config.world.map.bounds;
-    spawnPos.x = spawnPos.x.clamp(0.0, bounds.x);
-    spawnPos.y = spawnPos.y.clamp(0.0, bounds.y);
+    final mapWidth = game.run.mapWidthTiles * game.config.world.map.tileSize;
+    final mapHeight = game.run.mapHeightTiles * game.config.world.map.tileSize;
+    spawnPos.x = spawnPos.x.clamp(0.0, mapWidth);
+    spawnPos.y = spawnPos.y.clamp(0.0, mapHeight);
+
+    // Guard: Don't spawn inside buildings
+    final maps = game.world.children.whereType<ProceduralWorldMap>();
+    if (maps.isNotEmpty) {
+      final map = maps.first;
+      final tileSize = game.config.world.map.tileSize;
+      if (map.isTileOccupied(
+        (spawnPos.x ~/ tileSize).toInt(),
+        (spawnPos.y ~/ tileSize).toInt(),
+      )) {
+        return;
+      }
+    }
 
     final enemyJutsu = JutsuLoadoutSelector(
       _random,

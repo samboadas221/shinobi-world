@@ -9,8 +9,8 @@ class WorldRunConfig {
     required this.villageCount,
     required this.villageSize,
     required this.villageNamePool,
-    required this.coordinateMaxX,
-    required this.coordinateMaxY,
+    required this.minVillageDistanceTiles,
+    required this.mapMarginTiles,
     required this.rogue,
     required this.names,
   });
@@ -22,8 +22,8 @@ class WorldRunConfig {
       villageCount: CountRange.fromYaml(run['village_count'] as YamlMap),
       villageSize: CountRange.fromYaml(run['village_size'] as YamlMap),
       villageNamePool: readStringList(run, 'village_name_pool'),
-      coordinateMaxX: readDouble(run, 'coordinate_max_x'),
-      coordinateMaxY: readDouble(run, 'coordinate_max_y'),
+      minVillageDistanceTiles: readInt(run, 'min_village_distance'),
+      mapMarginTiles: readInt(run, 'map_margin'),
       rogue: RogueGenerationConfig.fromYaml(run['rogue_ninja'] as YamlMap),
       names: NpcNameConfig.fromYaml(run['npc_names'] as YamlMap),
     );
@@ -33,8 +33,13 @@ class WorldRunConfig {
   final CountRange villageCount;
   final CountRange villageSize;
   final List<String> villageNamePool;
-  final double coordinateMaxX;
-  final double coordinateMaxY;
+
+  /// Minimum distance between any two villages, in TILES.
+  final int minVillageDistanceTiles;
+
+  /// Minimum distance from any village center to the map edge, in TILES.
+  final int mapMarginTiles;
+
   final RogueGenerationConfig rogue;
   final NpcNameConfig names;
 }
@@ -68,12 +73,10 @@ class RogueGenerationConfig {
 class NpcNameConfig {
   const NpcNameConfig({required this.first, required this.clan});
 
-  factory NpcNameConfig.fromYaml(YamlMap yaml) {
-    return NpcNameConfig(
-      first: readStringList(yaml, 'first'),
-      clan: readStringList(yaml, 'clan'),
-    );
-  }
+  factory NpcNameConfig.fromYaml(YamlMap yaml) => NpcNameConfig(
+        first: readStringList(yaml, 'first'),
+        clan: readStringList(yaml, 'clan'),
+      );
 
   final List<String> first;
   final List<String> clan;

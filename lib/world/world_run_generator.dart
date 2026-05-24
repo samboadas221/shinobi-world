@@ -1,181 +1,203 @@
 import 'dart:math';
-
 import '../config/models/count_range.dart';
 import '../config/models/village_population_config.dart';
+import '../config/models/world_config.dart';
 import '../config/models/world_run_config.dart';
 import 'generated_world_run.dart';
+import 'generators/village_position_solver.dart';
 
 class WorldRunGenerator {
-  const WorldRunGenerator({
+  WorldRunGenerator({
     required this.runConfig,
     required this.populationConfig,
+    required this.mapConfig,
   });
 
   final WorldRunConfig runConfig;
   final VillagePopulationConfig populationConfig;
+  final WorldMapConfig mapConfig;
+
+  late final List<GeneratedVillage> allPreCalculatedVillages;
 
   GeneratedWorldRun generateStartingVillageOnly() {
-    final seed = _rollWith(Random(), runConfig.seed);
+    final seed = _roll(runConfig.seed);
     final random = Random(seed);
-    final villageNames = [...runConfig.villageNamePool]..shuffle(random);
-    final villageCount = _rollWith(random, runConfig.villageCount);
-    final villages = <GeneratedVillage>[];
-    final ninjas = <GeneratedNinja>[];
 
-    // Pick a starting index randomly now
-    final startingIndex = random.nextInt(villageCount);
+    final mapWidthTiles = mapConfig.mapSizeTiles.rollWidth(random);
+    final mapHeightTiles = mapConfig.mapSizeTiles.rollHeight(random);
 
-    // Only generate the starting village
-    final startingVillage = _createVillage(
-      random,
-      startingIndex,
-      villageNames[startingIndex],
+    final startingVillageName =
+        runConfig.villageNamePool[random.nextInt(
+          runConfig.villageNamePool.length,
+        )];
+    final size = _roll(runConfig.villageSize);
+
+    final startingVillage = GeneratedVillage(
+      id: 'v_start',
+      name: startingVillageName,
+      size: size,
+      sizeLabel: populationConfig.tierForSize(size).label,
+      adultPopulation: _roll(populationConfig.tierForSize(size).adultPopulation),
+      x: (mapWidthTiles * mapConfig.tileSize) / 2,
+      y: (mapHeightTiles * mapConfig.tileSize) / 2,
     );
-    villages.add(startingVillage);
-    ninjas.addAll(_createVillageNinjas(random, startingVillage));
+
+    final currentVillages = <GeneratedVillage>[startingVillage];
+    final totalCount = _roll(runConfig.villageCount);
+    final usedNames = {startingVillageName};
+
+    const solver = VillagePositionSolver();
+
+    for (var i = 1; i < totalCount; i++) {
+      String name;
+      do {
+        name =
+            runConfig.villageNamePool[random.nextInt(
+              runConfig.villageNamePool.length,
+            )];
+      } while (usedNames.contains(name) &&
+          usedNames.length < runConfig.villageNamePool.length);
+      usedNames.add(name);
+
+      final size = _roll(runConfig.villageSize);
+      final pos = solver.findValidPosition(
+        random: random,
+        tileSize: mapConfig.tileSize,
+        runConfig: runConfig,
+        existingVillages: currentVillages,
+        mapWidthTiles: mapWidthTiles,
+        mapHeightTiles: mapHeightTiles,
+      );
+
+      final village = GeneratedVillage(
+        id: 'v_$i',
+        name: name,
+        size: size,
+        sizeLabel: populationConfig.tierForSize(size).label,
+        adultPopulation: _roll(
+          populationConfig.tierForSize(size).adultPopulation,
+        ),
+        x: pos.x,
+        y: pos.y,
+      );
+
+      currentVillages.add(village);
+    }
+
+    allPreCalculatedVillages = currentVillages;
+
+    final ninjas = _createSimpleNinjas(random, startingVillage);
 
     return GeneratedWorldRun(
       seed: seed,
-      villages: villages,
+      villages: [startingVillage], // Return ONLY starting village initially
       ninjas: ninjas,
       startingVillage: startingVillage,
-      rogueCount: 0, // Will be filled in phase 2
+      rogueCount: 0,
+      mapWidthTiles: mapWidthTiles,
+      mapHeightTiles: mapHeightTiles,
+      allVillages: currentVillages,
     );
   }
 
   GeneratedWorldRun generateRemaining(GeneratedWorldRun partialRun) {
+    // Kept for backward compatibility / tests
     final random = Random(partialRun.seed);
-    final villageNames = [...runConfig.villageNamePool]..shuffle(random);
-    final villageCount = _rollWith(random, runConfig.villageCount);
-    final villages = <GeneratedVillage>[partialRun.startingVillage];
-    final ninjas = <GeneratedNinja>[...partialRun.ninjas];
+    final currentVillages = List<GeneratedVillage>.from(allPreCalculatedVillages);
+    final currentNinjas = List<GeneratedNinja>.from(partialRun.ninjas);
 
-    // Identify which index was the starting village based on name
-    final startingIndex = villageNames.indexOf(partialRun.startingVillage.name);
-
-    for (var index = 0; index < villageCount; index++) {
-      if (index == startingIndex) {
-        continue;
-      }
-      final village = _createVillage(random, index, villageNames[index]);
-      villages.add(village);
-      ninjas.addAll(_createVillageNinjas(random, village));
+    for (final village in currentVillages) {
+      if (village.id == partialRun.startingVillage.id) continue;
+      currentNinjas.addAll(_createSimpleNinjas(random, village));
     }
-    final rogueNinjas = _createRogueNinjas(random, villageCount);
-    ninjas.addAll(rogueNinjas);
+
+    final rogueNinjas = generateRogueNinjas(random, currentVillages.length);
+    currentNinjas.addAll(rogueNinjas);
 
     return GeneratedWorldRun(
       seed: partialRun.seed,
-      villages: villages,
-      ninjas: ninjas,
+      villages: currentVillages,
+      ninjas: currentNinjas,
       startingVillage: partialRun.startingVillage,
       rogueCount: rogueNinjas.length,
+      mapWidthTiles: partialRun.mapWidthTiles,
+      mapHeightTiles: partialRun.mapHeightTiles,
+      allVillages: partialRun.allVillages,
     );
   }
 
-  GeneratedVillage _createVillage(Random random, int index, String name) {
-    final size = _rollWith(random, runConfig.villageSize);
-    final tier = populationConfig.tierForSize(size);
-    return GeneratedVillage(
-      id: 'village_$index',
-      name: name,
-      size: size,
-      sizeLabel: tier.label,
-      adultPopulation: _rollWith(random, tier.adultPopulation),
-      x: random.nextDouble() * runConfig.coordinateMaxX,
-      y: random.nextDouble() * runConfig.coordinateMaxY,
-    );
+  List<GeneratedNinja> generateNinjasForVillage(Random random, GeneratedVillage village) {
+    return _createSimpleNinjas(random, village);
   }
 
-  List<GeneratedNinja> _createVillageNinjas(
+  List<GeneratedNinja> generateRogueNinjas(Random random, int villageCount) {
+    final list = <GeneratedNinja>[];
+    final rogueCount = villageCount * _roll(runConfig.rogue.countPerVillage);
+    for (var i = 0; i < rogueCount; i++) {
+      list.add(
+        GeneratedNinja(
+          id: 'rogue_$i',
+          name:
+              '${_pick(random, runConfig.names.first)} '
+              '${_pick(random, runConfig.names.clan)}',
+          role: 'rogue_ninja',
+          villageId: 'none',
+          alignment: 'bad',
+          bingoListed: random.nextDouble() <= runConfig.rogue.bingoListChance,
+          active: false,
+          stats: const {
+            'health': 100,
+            'chakra': 100,
+            'attack': 15,
+            'defense': 10,
+            'speed': 10,
+          },
+        ),
+      );
+    }
+    return list;
+  }
+
+  List<GeneratedNinja> _createSimpleNinjas(
     Random random,
     GeneratedVillage village,
   ) {
+    final list = <GeneratedNinja>[];
     final tier = populationConfig.tierForSize(village.size);
-    final ninjas = <GeneratedNinja>[];
     for (final entry in tier.roles.entries) {
-      final count = _rollWith(random, entry.value);
-      for (var index = 0; index < count; index++) {
-        ninjas.add(
-          _createNinja(
-            random: random,
-            id: '${village.id}_${entry.key}_$index',
+      final count = _roll(entry.value);
+      for (var j = 0; j < count; j++) {
+        list.add(
+          GeneratedNinja(
+            id: '${village.id}_${entry.key}_$j',
+            name:
+                '${_pick(random, runConfig.names.first)} '
+                '${_pick(random, runConfig.names.clan)}',
             role: entry.key,
             villageId: village.id,
             alignment: 'village',
             bingoListed: entry.key == 'bingo_list',
             active: false,
+            stats: const {
+              'health': 100,
+              'chakra': 100,
+              'attack': 15,
+              'defense': 10,
+              'speed': 10,
+            },
           ),
         );
       }
     }
-    return ninjas;
+    return list;
   }
 
-  List<GeneratedNinja> _createRogueNinjas(Random random, int villageCount) {
-    final count =
-        villageCount * _rollWith(random, runConfig.rogue.countPerVillage);
-    return List.generate(count, (index) {
-      return _createNinja(
-        random: random,
-        id: 'rogue_$index',
-        role: 'rogue_ninja',
-        villageId: 'none',
-        alignment: _rollAlignment(random),
-        bingoListed: random.nextDouble() <= runConfig.rogue.bingoListChance,
-        active: false,
-      );
-    });
-  }
-
-  GeneratedNinja _createNinja({
-    required Random random,
-    required String id,
-    required String role,
-    required String villageId,
-    required String alignment,
-    required bool bingoListed,
-    required bool active,
-  }) {
-    return GeneratedNinja(
-      id: id,
-      name:
-          '${_pick(random, runConfig.names.first)} '
-          '${_pick(random, runConfig.names.clan)}',
-      role: role,
-      villageId: villageId,
-      alignment: alignment,
-      bingoListed: bingoListed,
-      active: active,
-      stats: _rollStats(random, role),
-    );
-  }
-
-  Map<String, int> _rollStats(Random random, String role) {
-    final statRanges = populationConfig.roleStats[role]!;
-    return {
-      for (final entry in statRanges.stats.entries)
-        entry.key: _rollWith(random, entry.value),
-    };
-  }
-
-  String _rollAlignment(Random random) {
-    final roll = random.nextDouble();
-    var cursor = 0.0;
-    for (final entry in runConfig.rogue.alignments.entries) {
-      cursor += entry.value;
-      if (roll <= cursor) {
-        return entry.key;
-      }
-    }
-    return runConfig.rogue.alignments.keys.last;
+  int _roll(CountRange range) {
+    if (range.max <= range.min) return range.min;
+    return range.min + Random().nextInt(range.max - range.min + 1);
   }
 
   String _pick(Random random, List<String> values) {
     return values[random.nextInt(values.length)];
-  }
-
-  int _rollWith(Random random, CountRange range) {
-    return range.min + random.nextInt(range.max - range.min + 1);
   }
 }

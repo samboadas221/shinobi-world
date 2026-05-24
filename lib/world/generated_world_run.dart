@@ -5,6 +5,9 @@ class GeneratedWorldRun {
     required this.ninjas,
     required this.startingVillage,
     required this.rogueCount,
+    required this.mapWidthTiles,
+    required this.mapHeightTiles,
+    required this.allVillages,
   });
 
   final int seed;
@@ -12,6 +15,9 @@ class GeneratedWorldRun {
   final List<GeneratedNinja> ninjas;
   final GeneratedVillage startingVillage;
   final int rogueCount;
+  final int mapWidthTiles;
+  final int mapHeightTiles;
+  final List<GeneratedVillage> allVillages;
 }
 
 class GeneratedVillage {

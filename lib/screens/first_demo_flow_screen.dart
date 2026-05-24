@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -57,6 +59,7 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
         database: _database,
         profile: _profile!,
         run: _run!,
+        onRegenerateWorld: () => _startRun(_profile!),
       ),
     };
   }
@@ -64,18 +67,16 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
   Future<void> _startRun(PlayerProfile profile) async {
     setState(() {
       _stage = _FirstDemoStage.loading;
-      _loadingMessage = 'Generating world seed...';
-      _loadingProgress = 0;
+      _loadingMessage = 'Generating starting village...';
+      _loadingProgress = 0.1;
     });
 
     final generator = WorldRunGenerator(
       runConfig: widget.config.worldRun,
       populationConfig: widget.config.villagePopulation,
+      mapConfig: widget.config.world.map,
     );
 
-    // Phase 1: generate only the starting village and its ninjas.
-    _updateLoading('Generating starting village...', 0.1);
-    await Future<void>.delayed(Duration.zero); // yield to render
     final run = generator.generateStartingVillageOnly();
 
     // Phase 2: prepare database tables.
@@ -86,6 +87,81 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
     _updateLoading('Storing starting village...', 0.5);
     await _database.storeFirstDemoRun(profile: profile, run: run);
 
+    // Trigger background calculations progressively one-by-one
+    Future.microtask(() async {
+      try {
+        final random = Random(run.seed);
+        var currentRun = run;
+
+        for (final village in generator.allPreCalculatedVillages) {
+          if (village.id == run.startingVillage.id) continue;
+
+          // Generate ninjas for this specific village
+          final villageNinjas = generator.generateNinjasForVillage(random, village);
+
+          // Store this village and its ninjas in the database
+          await _database.storeRemainingNinjas(
+            seed: run.seed,
+            villages: [village],
+            ninjas: villageNinjas,
+            startingVillageId: run.startingVillage.id,
+          );
+
+          // Update in-memory run state progressively
+          final updatedVillages = List<GeneratedVillage>.from(currentRun.villages)..add(village);
+          final updatedNinjas = List<GeneratedNinja>.from(currentRun.ninjas)..addAll(villageNinjas);
+
+          currentRun = GeneratedWorldRun(
+            seed: run.seed,
+            villages: updatedVillages,
+            ninjas: updatedNinjas,
+            startingVillage: run.startingVillage,
+            rogueCount: currentRun.rogueCount,
+            mapWidthTiles: run.mapWidthTiles,
+            mapHeightTiles: run.mapHeightTiles,
+            allVillages: run.allVillages,
+          );
+
+          if (mounted) {
+            setState(() {
+              _run = currentRun;
+            });
+          }
+
+          // Small delay (100ms) to ensure smooth background processing and map redrawing
+          await Future.delayed(const Duration(milliseconds: 100));
+        }
+
+        // Finally, generate rogue ninjas
+        final rogueNinjas = generator.generateRogueNinjas(random, generator.allPreCalculatedVillages.length);
+        await _database.storeRemainingNinjas(
+          seed: run.seed,
+          villages: [],
+          ninjas: rogueNinjas,
+          startingVillageId: run.startingVillage.id,
+        );
+
+        final finalRun = GeneratedWorldRun(
+          seed: run.seed,
+          villages: currentRun.villages,
+          ninjas: List<GeneratedNinja>.from(currentRun.ninjas)..addAll(rogueNinjas),
+          startingVillage: run.startingVillage,
+          rogueCount: rogueNinjas.length,
+          mapWidthTiles: run.mapWidthTiles,
+          mapHeightTiles: run.mapHeightTiles,
+          allVillages: run.allVillages,
+        );
+
+        if (mounted) {
+          setState(() {
+            _run = finalRun;
+          });
+        }
+      } catch (_) {
+        // Gracefully handle background exception
+      }
+    });
+
     // Phase 4: enter the game immediately.
     _updateLoading('Entering the world...', 0.9);
     setState(() {
@@ -93,25 +169,6 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
       _run = run;
       _stage = _FirstDemoStage.game;
     });
-
-    // Phase 5: generate remaining villages & ninjas in the background.
-    _generateRemainingInBackground(generator, run, profile);
-  }
-
-  Future<void> _generateRemainingInBackground(
-    WorldRunGenerator generator,
-    GeneratedWorldRun partialRun,
-    PlayerProfile profile,
-  ) async {
-    final fullRun = generator.generateRemaining(partialRun);
-    await _database.storeRemainingNinjas(
-      seed: fullRun.seed,
-      villages: fullRun.villages,
-      ninjas: fullRun.ninjas,
-      startingVillageId: partialRun.startingVillage.id,
-    );
-    // Update the run reference so the HUD shows the full count.
-    setState(() => _run = fullRun);
   }
 
   void _updateLoading(String message, double progress) {

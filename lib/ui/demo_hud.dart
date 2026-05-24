@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import '../game/demo_state.dart';
 
@@ -81,9 +82,15 @@ class _HudPanel extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Shinobi World Demo',
-                  style: Theme.of(context).textTheme.titleMedium,
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Shinobi World Demo',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const _FpsCounter(),
+                  ],
                 ),
                 const SizedBox(height: 8),
                 Text('Player: ${state.playerName}'),
@@ -138,6 +145,55 @@ class _PracticeButtons extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+class _FpsCounter extends StatefulWidget {
+  const _FpsCounter();
+
+  @override
+  State<_FpsCounter> createState() => _FpsCounterState();
+}
+
+class _FpsCounterState extends State<_FpsCounter> {
+  int _fps = 0;
+  int _frameCount = 0;
+  double _lastUpdateTime = 0;
+  late final FrameCallback _frameCallback;
+
+  @override
+  void initState() {
+    super.initState();
+    _frameCallback = (duration) {
+      if (!mounted) return;
+      _frameCount++;
+      final double sec = duration.inMicroseconds / 1000000.0;
+      if (_lastUpdateTime == 0) {
+        _lastUpdateTime = sec;
+      } else {
+        final double elapsed = sec - _lastUpdateTime;
+        if (elapsed >= 0.400) {
+          setState(() {
+            _fps = (_frameCount / elapsed).round();
+            _frameCount = 0;
+            _lastUpdateTime = sec;
+          });
+        }
+      }
+      SchedulerBinding.instance.addPostFrameCallback(_frameCallback);
+    };
+    SchedulerBinding.instance.addPostFrameCallback(_frameCallback);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'FPS: $_fps',
+      style: const TextStyle(
+        color: Colors.greenAccent,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +7,10 @@ import '../config/models/player_config.dart';
 import 'shinobi_world_game.dart';
 
 class PlayerComponent extends PositionComponent
-    with KeyboardHandler, HasGameReference<ShinobiWorldGame> {
+    with
+        KeyboardHandler,
+        HasGameReference<ShinobiWorldGame>,
+        CollisionCallbacks {
   PlayerComponent({
     required PlayerConfig config,
     required Vector2 spawnPosition,
@@ -18,6 +22,14 @@ class PlayerComponent extends PositionComponent
   late final Paint _bodyPaint = Paint()..color = _config.visual.bodyColor;
   late final Paint _headbandPaint = Paint()
     ..color = _config.visual.headbandColor;
+
+  final Vector2 _previousPosition = Vector2.zero();
+
+  @override
+  Future<void> onLoad() async {
+    await super.onLoad();
+    add(RectangleHitbox());
+  }
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
@@ -34,6 +46,8 @@ class PlayerComponent extends PositionComponent
   @override
   void update(double dt) {
     super.update(dt);
+    _previousPosition.setFrom(position);
+
     final direction = _movementDirection();
     if (direction.isZero()) {
       return;
@@ -71,8 +85,9 @@ class PlayerComponent extends PositionComponent
 
     // Include joystick movement if keyboard is not active
     if (direction.isZero() &&
-        game.joystick.direction != JoystickDirection.idle) {
-      direction = game.joystick.relativeDelta;
+        game.joystick != null &&
+        game.joystick!.direction != JoystickDirection.idle) {
+      direction = game.joystick!.relativeDelta;
     }
 
     return direction;
