@@ -8,17 +8,18 @@ import 'world_layout_data.dart';
 class WorldLayoutGenerator {
   const WorldLayoutGenerator();
 
-  WorldLayoutData generateLayout({
+  Future<WorldLayoutData> generateLayout({
     required GeneratedWorldRun run,
     required WorldMapConfig mapConfig,
   }) {
     return generateWorldLayout(run: run, mapConfig: mapConfig);
   }
 
-  WorldLayoutData generateWorldLayout({
+  Future<WorldLayoutData> generateWorldLayout({
     required GeneratedWorldRun run,
     required WorldMapConfig mapConfig,
-  }) {
+    void Function(String villageName, int index, int total)? onProgress,
+  }) async {
     final roads = <LayoutRoad>[];
     final buildings = <LayoutBuilding>[];
     final trainingFields = <LayoutTrainingField>[];
@@ -28,8 +29,18 @@ class WorldLayoutGenerator {
     final villageSpawnPoints = <String, Point<double>>{};
     final villageRoadsMap = <String, List<LayoutRoad>>{};
 
+    int index = 0;
+    final total = run.allVillages.length;
+
     // 1. Generate local village layouts for ALL precalculated villages
     for (final village in run.allVillages) {
+      index++;
+      if (onProgress != null) {
+        onProgress(village.name, index, total);
+      }
+      // Yield to the Flutter engine to draw the loading bar
+      await Future.delayed(const Duration(milliseconds: 10));
+
       final villageRandom = village.id == run.startingVillage.id
           ? Random(run.seed)
           : Random((run.seed + village.id.hashCode).abs() % 1000000000);
@@ -86,6 +97,8 @@ class WorldLayoutGenerator {
 
         highways.addAll(highwaySegment);
       }
+      // Yield to keep UI smooth during highway generation
+      await Future.delayed(const Duration(milliseconds: 5));
     }
 
     final startingSpawn = villageSpawnPoints[run.startingVillage.id] ?? Point(run.startingVillage.x, run.startingVillage.y);

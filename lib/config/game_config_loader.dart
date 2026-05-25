@@ -14,6 +14,8 @@ import 'models/village_population_config.dart';
 import 'models/world_config.dart';
 import 'models/world_rules_config.dart';
 import 'models/world_run_config.dart';
+import 'models/stats_scaling_config.dart';
+import 'models/jutsu_progression_config.dart';
 import 'game_config.dart';
 
 class GameConfigLoader {
@@ -47,9 +49,6 @@ class GameConfigLoader {
       villagePopulation: VillagePopulationConfig.fromYaml(
         await _loadManifestMap(configs, 'world_village_configuration'),
       ),
-      passiveSimulation: PassiveSimulationConfig.fromYaml(
-        await _loadManifestMap(configs, 'world_passive_simulation'),
-      ),
       training: TrainingConfig.fromYaml(
         await _loadManifestMap(configs, 'world_training'),
       ),
@@ -78,6 +77,12 @@ class GameConfigLoader {
       summons: await _loadList(
         configs['summons'],
         SummonContractConfig.fromYaml,
+      ),
+      statsScaling: StatsScalingConfig.fromYaml(
+        await _loadManifestMap(configs, 'character_stats_scaling'),
+      ),
+      jutsuProgression: JutsuProgressionConfig.fromYaml(
+        await _loadManifestMap(configs, 'jutsu_progression'),
       ),
     );
   }

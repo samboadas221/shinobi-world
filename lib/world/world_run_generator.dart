@@ -3,6 +3,7 @@ import '../config/models/count_range.dart';
 import '../config/models/village_population_config.dart';
 import '../config/models/world_config.dart';
 import '../config/models/world_run_config.dart';
+import '../character/ninja_stats.dart';
 import 'generated_world_run.dart';
 import 'generators/village_position_solver.dart';
 
@@ -19,8 +20,8 @@ class WorldRunGenerator {
 
   late final List<GeneratedVillage> allPreCalculatedVillages;
 
-  GeneratedWorldRun generateStartingVillageOnly() {
-    final seed = _roll(runConfig.seed);
+  GeneratedWorldRun generateStartingVillageOnly({int? customSeed}) {
+    final seed = customSeed ?? _roll(runConfig.seed);
     final random = Random(seed);
 
     final mapWidthTiles = mapConfig.mapSizeTiles.rollWidth(random);
@@ -134,6 +135,7 @@ class WorldRunGenerator {
     final list = <GeneratedNinja>[];
     final rogueCount = villageCount * _roll(runConfig.rogue.countPerVillage);
     for (var i = 0; i < rogueCount; i++) {
+      final rolledLevel = 1 + random.nextInt(10);
       list.add(
         GeneratedNinja(
           id: 'rogue_$i',
@@ -145,13 +147,7 @@ class WorldRunGenerator {
           alignment: 'bad',
           bingoListed: random.nextDouble() <= runConfig.rogue.bingoListChance,
           active: false,
-          stats: const {
-            'health': 100,
-            'chakra': 100,
-            'attack': 15,
-            'defense': 10,
-            'speed': 10,
-          },
+          stats: NinjaStats.rollNew(level: rolledLevel, random: random),
         ),
       );
     }
@@ -167,6 +163,7 @@ class WorldRunGenerator {
     for (final entry in tier.roles.entries) {
       final count = _roll(entry.value);
       for (var j = 0; j < count; j++) {
+        final rolledLevel = 1 + random.nextInt(10);
         list.add(
           GeneratedNinja(
             id: '${village.id}_${entry.key}_$j',
@@ -178,13 +175,7 @@ class WorldRunGenerator {
             alignment: 'village',
             bingoListed: entry.key == 'bingo_list',
             active: false,
-            stats: const {
-              'health': 100,
-              'chakra': 100,
-              'attack': 15,
-              'defense': 10,
-              'speed': 10,
-            },
+            stats: NinjaStats.rollNew(level: rolledLevel, random: random),
           ),
         );
       }

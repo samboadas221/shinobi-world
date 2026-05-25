@@ -7,6 +7,7 @@ import '../data/shinobi_database.dart';
 import '../game/shinobi_world_game.dart';
 import '../ui/demo_hud.dart';
 import '../ui/overworld/practice_effect_overlay.dart';
+import '../game/world_layout/world_layout_data.dart';
 import '../world/generated_world_run.dart';
 import 'combat_screen.dart';
 
@@ -17,6 +18,7 @@ class DemoGameScreen extends StatefulWidget {
     required this.database,
     required this.profile,
     required this.run,
+    required this.layoutData,
     required this.onRegenerateWorld,
   });
 
@@ -24,7 +26,8 @@ class DemoGameScreen extends StatefulWidget {
   final ShinobiDatabase database;
   final PlayerProfile profile;
   final GeneratedWorldRun run;
-  final VoidCallback onRegenerateWorld;
+  final WorldLayoutData layoutData;
+  final void Function(int? seed) onRegenerateWorld;
 
   @override
   State<DemoGameScreen> createState() => _DemoGameScreenState();
@@ -36,6 +39,7 @@ class _DemoGameScreenState extends State<DemoGameScreen> {
     database: widget.database,
     profile: widget.profile,
     run: widget.run,
+    layoutData: widget.layoutData,
   );
   String? _practiceEffectJutsu;
 
@@ -67,6 +71,11 @@ class _DemoGameScreenState extends State<DemoGameScreen> {
           DemoHud(
             stateListenable: _game.demoState,
             onPracticeJutsu: _onPracticeJutsu,
+            onRegenerateWorld: widget.onRegenerateWorld,
+            profile: widget.profile,
+            statsScaling: widget.config.statsScaling,
+            jutsuProgression: widget.config.jutsuProgression,
+            game: _game,
           ),
           if (_practiceEffectJutsu != null)
             Positioned(
@@ -95,19 +104,6 @@ class _DemoGameScreenState extends State<DemoGameScreen> {
                 ),
               );
             },
-          ),
-          Positioned(
-            top: 16,
-            right: 16,
-            child: ElevatedButton.icon(
-              onPressed: widget.onRegenerateWorld,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Regenerate World'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.black87,
-                foregroundColor: Colors.white,
-              ),
-            ),
           ),
         ],
       ),

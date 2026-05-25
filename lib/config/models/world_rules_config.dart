@@ -2,40 +2,6 @@ import 'package:yaml/yaml.dart';
 
 import 'yaml_readers.dart';
 
-class PassiveSimulationConfig {
-  const PassiveSimulationConfig({
-    required this.strengthGainIntervalMinutes,
-    required this.strengthGainPercent,
-    required this.casualtyIntervalMinutes,
-    required this.casualtyMin,
-    required this.casualtyMax,
-    required this.activeRadiusTiles,
-  });
-
-  factory PassiveSimulationConfig.fromYaml(YamlMap yaml) {
-    final passive = yaml['passive_simulation'] as YamlMap;
-    return PassiveSimulationConfig(
-      strengthGainIntervalMinutes: readInt(
-        passive,
-        'strength_gain_interval_minutes',
-      ),
-      strengthGainPercent: readDouble(passive, 'strength_gain_percent'),
-      casualtyIntervalMinutes: readInt(passive, 'casualty_interval_minutes'),
-      casualtyMin: readInt(passive, 'casualty_min'),
-      casualtyMax: readInt(passive, 'casualty_max'),
-      activeRadiusTiles: readInt(passive, 'active_radius_tiles'),
-    );
-  }
-
-  final int strengthGainIntervalMinutes;
-  final double strengthGainPercent;
-  final int casualtyIntervalMinutes;
-  final int casualtyMin;
-  final int casualtyMax;
-  final int activeRadiusTiles;
-}
-
-
 class TrainingConfig {
   const TrainingConfig({
     required this.fieldBoostPercent,

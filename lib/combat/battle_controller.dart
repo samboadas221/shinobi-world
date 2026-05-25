@@ -27,6 +27,7 @@ class BattleController extends ChangeNotifier {
   final Random _random = Random();
   final List<String> _logs = [];
   var _turnIndex = 0;
+  final List<String> castedJutsuIds = [];
 
   late final BattleParticipant player;
   late final BattleParticipant enemy;
@@ -50,6 +51,7 @@ class BattleController extends ChangeNotifier {
     if (!isPlayerTurn || player.currentChakra < cost) {
       return;
     }
+    castedJutsuIds.add(jutsu.id);
     _useJutsu(player, enemy, jutsu, chakraCost: cost);
     _finishPlayerTurn();
   }

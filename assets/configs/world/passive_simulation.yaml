@@ -1,7 +1,0 @@
-passive_simulation:
-  strength_gain_interval_minutes: 5
-  strength_gain_percent: 1
-  casualty_interval_minutes: 10
-  casualty_min: 1
-  casualty_max: 2
-  active_radius_tiles: 18

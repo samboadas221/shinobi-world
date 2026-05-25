@@ -3,8 +3,18 @@ import 'package:flutter/material.dart';
 import '../config/models/world_config.dart';
 import '../world/generated_world_run.dart';
 import 'world_layout/world_layout_data.dart';
+import 'world_layout/render_chunk.dart';
+import 'shinobi_world_game.dart';
 
-class ProceduralWorldMap extends PositionComponent {
+class _ChunkIndexBounds {
+  const _ChunkIndexBounds(this.minCx, this.maxCx, this.minCy, this.maxCy);
+  final int minCx;
+  final int maxCx;
+  final int minCy;
+  final int maxCy;
+}
+
+class ProceduralWorldMap extends PositionComponent with HasGameReference<ShinobiWorldGame> {
   ProceduralWorldMap({
     required this.config,
     required this.run,
@@ -20,6 +30,11 @@ class ProceduralWorldMap extends PositionComponent {
   final WorldMapConfig config;
   final GeneratedWorldRun run;
   final WorldLayoutData _layoutData;
+
+  late final double _chunkSize;
+  late final int _cols;
+  late final int _rows;
+  late final List<List<RenderChunk>> _chunks;
 
   // Visual Paints
   late final Paint _grassPaint = Paint()..color = config.visuals.grassColor;
@@ -47,6 +62,81 @@ class ProceduralWorldMap extends PositionComponent {
   @override
   Future<void> onLoad() async {
     await super.onLoad();
+
+    _chunkSize = 16.0 * config.tileSize;
+    _cols = (size.x / _chunkSize).ceil();
+    _rows = (size.y / _chunkSize).ceil();
+
+    // 1. Initialize the grid of RenderChunks
+    _chunks = List.generate(
+      _rows,
+      (y) => List.generate(
+        _cols,
+        (x) => RenderChunk(
+          cx: x,
+          cy: y,
+          rect: Rect.fromLTWH(
+            x * _chunkSize,
+            y * _chunkSize,
+            _chunkSize,
+            _chunkSize,
+          ),
+        ),
+      ),
+    );
+
+    // 2. Partition all layout elements into chunks they overlap
+    for (final field in _layoutData.trainingFields) {
+      final bounds = _getChunkBounds(field.rect);
+      for (int y = bounds.minCy; y <= bounds.maxCy; y++) {
+        for (int x = bounds.minCx; x <= bounds.maxCx; x++) {
+          if (field.rect.overlaps(_chunks[y][x].rect)) {
+            _chunks[y][x].trainingFields.add(field);
+          }
+        }
+      }
+    }
+
+    for (final hw in _layoutData.highways) {
+      final bounds = _getChunkBounds(hw.rect);
+      for (int y = bounds.minCy; y <= bounds.maxCy; y++) {
+        for (int x = bounds.minCx; x <= bounds.maxCx; x++) {
+          if (hw.rect.overlaps(_chunks[y][x].rect)) {
+            _chunks[y][x].highways.add(hw);
+          }
+        }
+      }
+    }
+
+    for (final road in _layoutData.roads) {
+      final bounds = _getChunkBounds(road.rect);
+      for (int y = bounds.minCy; y <= bounds.maxCy; y++) {
+        for (int x = bounds.minCx; x <= bounds.maxCx; x++) {
+          if (road.rect.overlaps(_chunks[y][x].rect)) {
+            _chunks[y][x].roads.add(road);
+          }
+        }
+      }
+    }
+
+    for (final building in _layoutData.buildings) {
+      final bounds = _getChunkBounds(building.rect);
+      for (int y = bounds.minCy; y <= bounds.maxCy; y++) {
+        for (int x = bounds.minCx; x <= bounds.maxCx; x++) {
+          if (building.rect.overlaps(_chunks[y][x].rect)) {
+            _chunks[y][x].buildings.add(building);
+          }
+        }
+      }
+    }
+  }
+
+  _ChunkIndexBounds _getChunkBounds(Rect rect) {
+    int minCx = (rect.left / _chunkSize).floor().clamp(0, _cols - 1);
+    int maxCx = (rect.right / _chunkSize).floor().clamp(0, _cols - 1);
+    int minCy = (rect.top / _chunkSize).floor().clamp(0, _rows - 1);
+    int maxCy = (rect.bottom / _chunkSize).floor().clamp(0, _rows - 1);
+    return _ChunkIndexBounds(minCx, maxCx, minCy, maxCy);
   }
 
   bool isTileOccupied(int tx, int ty) {
@@ -64,20 +154,44 @@ class ProceduralWorldMap extends PositionComponent {
     // 1. Draw the global grass backdrop
     canvas.drawRect(size.toRect(), _grassPaint);
 
+    // Get the visible rectangle in world coordinates
+    final visibleRect = game.camera.visibleWorldRect;
+
+    // Calculate which chunks are visible
+    int minCx = (visibleRect.left / _chunkSize).floor().clamp(0, _cols - 1);
+    int maxCx = (visibleRect.right / _chunkSize).floor().clamp(0, _cols - 1);
+    int minCy = (visibleRect.top / _chunkSize).floor().clamp(0, _rows - 1);
+    int maxCy = (visibleRect.bottom / _chunkSize).floor().clamp(0, _rows - 1);
+
+    final visibleFields = <LayoutTrainingField>{};
+    final visibleHighways = <LayoutHighway>{};
+    final visibleRoads = <LayoutRoad>{};
+    final visibleBuildings = <LayoutBuilding>{};
+
+    for (int y = minCy; y <= maxCy; y++) {
+      for (int x = minCx; x <= maxCx; x++) {
+        final chunk = _chunks[y][x];
+        visibleFields.addAll(chunk.trainingFields);
+        visibleHighways.addAll(chunk.highways);
+        visibleRoads.addAll(chunk.roads);
+        visibleBuildings.addAll(chunk.buildings);
+      }
+    }
+
     // 2. Draw Training Fields
-    for (final field in _layoutData.trainingFields) {
+    for (final field in visibleFields) {
       canvas.drawRect(field.rect, _trainingFieldPaint);
     }
 
     // 3. Draw Highways (dirt and stone)
-    for (final hw in _layoutData.highways) {
+    for (final hw in visibleHighways) {
       final paint =
           hw.material == RoadMaterial.stone ? _stoneRoadPaint : _dirtRoadPaint;
       canvas.drawRect(hw.rect, paint);
     }
 
     // 4. Draw Local Village Roads
-    for (final road in _layoutData.roads) {
+    for (final road in visibleRoads) {
       final paint =
           road.material == RoadMaterial.stone
               ? _stoneRoadPaint
@@ -86,7 +200,7 @@ class ProceduralWorldMap extends PositionComponent {
     }
 
     // 5. Draw Buildings with unique types/colors and labels
-    for (final building in _layoutData.buildings) {
+    for (final building in visibleBuildings) {
       final paint = _paintForBuilding(building.type);
       canvas.drawRect(building.rect, paint);
 
@@ -171,7 +285,7 @@ class ProceduralWorldMap extends PositionComponent {
   String _labelForBuilding(BuildingType type) {
     switch (type) {
       case BuildingType.kageOffice: return 'K';
-      case BuildingType.ninjaAcademy: return 'A'; // Using A for Academy, though user only mentioned T for Training fields.
+      case BuildingType.ninjaAcademy: return 'A';
       case BuildingType.forbiddenLibrary: return 'L';
       case BuildingType.centralMarket: return 'CM';
       case BuildingType.hairStore: return 'Sh';

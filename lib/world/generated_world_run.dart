@@ -1,3 +1,5 @@
+import '../character/ninja_stats.dart';
+
 class GeneratedWorldRun {
   const GeneratedWorldRun({
     required this.seed,
@@ -59,5 +61,5 @@ class GeneratedNinja {
   final String alignment;
   final bool bingoListed;
   final bool active;
-  final Map<String, int> stats;
+  final NinjaStats stats;
 }

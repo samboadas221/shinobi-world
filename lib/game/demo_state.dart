@@ -18,6 +18,8 @@ class DemoState {
     required this.enemyName,
     required this.enemyJutsuNames,
     required this.databaseStatus,
+    required this.playerTileX,
+    required this.playerTileY,
   });
 
   factory DemoState.empty() {
@@ -40,6 +42,8 @@ class DemoState {
       enemyName: '',
       enemyJutsuNames: [],
       databaseStatus: '',
+      playerTileX: 0.0,
+      playerTileY: 0.0,
     );
   }
 
@@ -61,6 +65,8 @@ class DemoState {
   final String enemyName;
   final List<String> enemyJutsuNames;
   final String databaseStatus;
+  final double playerTileX;
+  final double playerTileY;
 }
 
 class JutsuPracticeState {

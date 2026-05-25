@@ -2,11 +2,12 @@ configs:
   app_brand: configs/app/brand.yaml
   character_creation: configs/character/creation.yaml
   character_clothing: configs/character/clothing.yaml
+  character_stats_scaling: configs/character/stats_scaling.yaml
+  jutsu_progression: configs/jutsu/jutsu_progression.yaml
   world_time: configs/world/time.yaml
   world_map: configs/world/map.yaml
   world_run_generation: configs/world/run_generation.yaml
   world_village_configuration: configs/world/village_configuration.yaml
-  world_passive_simulation: configs/world/passive_simulation.yaml
   world_training: configs/world/training.yaml
   player_base: configs/player/base.yaml
   combat_turns: configs/combat/turns.yaml
@@ -25,7 +26,6 @@ configs:
     - configs/jutsu/stone_skin.yaml
     - configs/jutsu/lightning_spark.yaml
     - configs/jutsu/static_net.yaml
-  enemies:
-    - configs/entities/enemies/border_scout.yaml
+  enemies: []
   summons:
     - configs/summons/frogs.yaml

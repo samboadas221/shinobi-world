@@ -1,0 +1,44 @@
+stats_scaling:
+  tiers:
+    S: 1.5
+    A: 1.2
+    B: 1.0
+    C: 0.8
+    D: 0.6
+    E: 0.4
+  multipliers:
+    LV: 1.0
+    HP: 0.2
+    CP: 30.0
+    SP: 30.0
+    Armor: 0.0
+    Speed: 1.0
+    SpeedReaction: 1.0
+    SpeedSeal: 0.5
+    ChakraControl: 0.6
+    ChakraBuffer: 0.5
+    Taijutsu: 0.4
+  bases:
+    LV: 1
+    HP: 10
+    CP: 100
+    SP: 10
+    Armor: 0
+    Speed: 10
+    SpeedReaction: 10
+    SpeedSeal: 10
+    ChakraControl: 50
+    ChakraBuffer: 10
+    Taijutsu: 20
+  maxes:
+    LV: 500
+    HP: 1000
+    CP: 150000
+    SP: 150000
+    Armor: 9999
+    Speed: 5000
+    SpeedReaction: 5000
+    SpeedSeal: 2500
+    ChakraControl: 3000
+    ChakraBuffer: 2500
+    Taijutsu: 2000

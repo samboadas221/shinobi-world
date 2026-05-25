@@ -7,6 +7,7 @@ class BattleResult {
     required this.playerChakra,
     required this.enemyHealth,
     required this.enemyChakra,
+    this.castedJutsuIds = const [],
   });
 
   final BattleOutcome outcome;
@@ -14,6 +15,7 @@ class BattleResult {
   final int playerChakra;
   final int enemyHealth;
   final int enemyChakra;
+  final List<String> castedJutsuIds;
 
   bool get victory => outcome == BattleOutcome.victory;
   bool get defeated => outcome == BattleOutcome.defeat;

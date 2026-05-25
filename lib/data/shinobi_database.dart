@@ -109,6 +109,28 @@ class ShinobiDatabase extends GeneratedDatabase {
       startingVillageId: startingVillageId,
     );
   }
+
+  Future<void> savePlayerJutsu({
+    required int seed,
+    required String jutsuId,
+    required int level,
+    required int exp,
+  }) {
+    return FirstDemoStore(this).savePlayerJutsu(
+      seed: seed,
+      jutsuId: jutsuId,
+      level: level,
+      exp: exp,
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> loadPlayerJutsus(int seed) {
+    return FirstDemoStore(this).loadPlayerJutsus(seed);
+  }
+
+  Future<PlayerProfile?> loadPlayerProfile(int seed) {
+    return FirstDemoStore(this).loadPlayerProfile(seed);
+  }
 }
 
 LazyDatabase _openConnection() {

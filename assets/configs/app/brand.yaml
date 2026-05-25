@@ -13,3 +13,29 @@ menu:
     exit: Exit
   settings_message: Settings are not available in this demo
   exit_message: Exit requested
+
+main_menu_style:
+  button_color: "#2F6F4E"
+  button_text_color: "#FFFFFF"
+  button_width: 280.0
+  button_height: 50.0
+  spacing: 16.0
+  border_radius: 12.0
+  font_size: 16.0
+  button_shape: "rounded"
+  background_color: "#121212"
+  title_color: "#2F6F4E"
+  title_size: 32.0
+
+character_menu_style:
+  button_color: "#2F6F4E"
+  button_text_color: "#FFFFFF"
+  button_width: 180.0
+  button_height: 44.0
+  spacing: 12.0
+  border_radius: 8.0
+  font_size: 14.0
+  button_shape: "stadium"
+  background_color: "#1A1A1A"
+  title_color: "#FFFFFF"
+  title_size: 24.0

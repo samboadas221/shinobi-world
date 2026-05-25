@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flame/collisions.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/material.dart';
@@ -43,6 +44,8 @@ class PlayerComponent extends PositionComponent
     _pressedKeys.clear();
   }
 
+  double _chakraDrainAccumulator = 0.0;
+
   @override
   void update(double dt) {
     super.update(dt);
@@ -50,9 +53,29 @@ class PlayerComponent extends PositionComponent
 
     final direction = _movementDirection();
     if (direction.isZero()) {
+      _chakraDrainAccumulator = 0.0;
       return;
     }
-    position += direction.normalized() * _config.movementSpeed * dt;
+
+    final isShiftPressed = _pressedKeys.contains(LogicalKeyboardKey.shiftLeft) ||
+        _pressedKeys.contains(LogicalKeyboardKey.shiftRight);
+    final hasChakra = game.practice.currentChakra > 0;
+    final isRunning = isShiftPressed && hasChakra;
+
+    var speed = _config.movementSpeed;
+    if (isRunning) {
+      speed *= 2.0;
+      _chakraDrainAccumulator += 0.1 * dt;
+      if (_chakraDrainAccumulator >= 1.0) {
+        final drain = _chakraDrainAccumulator.floor();
+        _chakraDrainAccumulator -= drain;
+        game.practice.currentChakra = max(0, game.practice.currentChakra - drain);
+      }
+    } else {
+      _chakraDrainAccumulator = 0.0;
+    }
+
+    position += direction.normalized() * speed * dt;
   }
 
   @override

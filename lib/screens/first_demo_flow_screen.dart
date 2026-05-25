@@ -1,11 +1,12 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../character/player_profile.dart';
 import '../config/game_config.dart';
 import '../data/shinobi_database.dart';
+import '../game/world_layout/world_layout_data.dart';
+import '../game/world_layout/world_layout_generator.dart';
 import '../world/generated_world_run.dart';
 import '../world/world_run_generator.dart';
 import 'character_creation_screen.dart';
@@ -29,6 +30,7 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
   var _stage = _FirstDemoStage.splash;
   PlayerProfile? _profile;
   GeneratedWorldRun? _run;
+  WorldLayoutData? _layoutData;
   String _loadingMessage = '';
   double _loadingProgress = 0;
 
@@ -41,6 +43,7 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
       ),
       _FirstDemoStage.menu => MainMenuScreen(
         menu: widget.config.app.menu,
+        style: widget.config.app.mainMenuStyle,
         onPlay: () => setState(() => _stage = _FirstDemoStage.character),
         onSettings: _showSettingsMessage,
         onExit: _exitGame,
@@ -48,6 +51,8 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
       _FirstDemoStage.character => CharacterCreationScreen(
         creation: widget.config.character,
         clothing: widget.config.clothing,
+        statsScaling: widget.config.statsScaling,
+        style: widget.config.app.characterMenuStyle,
         onCreated: _startRun,
       ),
       _FirstDemoStage.loading => _LoadingScreen(
@@ -59,15 +64,16 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
         database: _database,
         profile: _profile!,
         run: _run!,
-        onRegenerateWorld: () => _startRun(_profile!),
+        layoutData: _layoutData!,
+        onRegenerateWorld: (seed) => _startRun(_profile!, customSeed: seed),
       ),
     };
   }
 
-  Future<void> _startRun(PlayerProfile profile) async {
+  Future<void> _startRun(PlayerProfile profile, {int? customSeed}) async {
     setState(() {
       _stage = _FirstDemoStage.loading;
-      _loadingMessage = 'Generating starting village...';
+      _loadingMessage = 'Creating Village Data';
       _loadingProgress = 0.1;
     });
 
@@ -77,105 +83,112 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
       mapConfig: widget.config.world.map,
     );
 
-    final run = generator.generateStartingVillageOnly();
+    final run = generator.generateStartingVillageOnly(customSeed: customSeed);
 
     // Phase 2: prepare database tables.
-    _updateLoading('Preparing database...', 0.3);
     await _database.prepareDemoData();
 
     // Phase 3: store starting village + its ninjas only.
-    _updateLoading('Storing starting village...', 0.5);
     await _database.storeFirstDemoRun(profile: profile, run: run);
 
-    // Trigger background calculations progressively one-by-one
-    Future.microtask(() async {
-      try {
-        final random = Random(run.seed);
-        var currentRun = run;
+    final random = Random(run.seed);
+    var currentRun = run;
 
-        for (final village in generator.allPreCalculatedVillages) {
-          if (village.id == run.startingVillage.id) continue;
+    final otherVillages = generator.allPreCalculatedVillages
+        .where((v) => v.id != run.startingVillage.id)
+        .toList();
+    final totalVillages = otherVillages.length;
+    int generatedCount = 0;
 
-          // Generate ninjas for this specific village
-          final villageNinjas = generator.generateNinjasForVillage(random, village);
+    for (final village in otherVillages) {
+      generatedCount++;
+      // Progress goes from 10% (0.1) to 90% (0.9)
+      final progress = 0.1 + (0.8 * (generatedCount / totalVillages));
+      _updateLoading('Generating village: ${village.name}', progress);
 
-          // Store this village and its ninjas in the database
-          await _database.storeRemainingNinjas(
-            seed: run.seed,
-            villages: [village],
-            ninjas: villageNinjas,
-            startingVillageId: run.startingVillage.id,
-          );
+      // Yield to the Flutter engine to draw the updated loading bar
+      await Future.delayed(const Duration(milliseconds: 50));
 
-          // Update in-memory run state progressively
-          final updatedVillages = List<GeneratedVillage>.from(currentRun.villages)..add(village);
-          final updatedNinjas = List<GeneratedNinja>.from(currentRun.ninjas)..addAll(villageNinjas);
+      // Generate ninjas for this specific village
+      final villageNinjas = generator.generateNinjasForVillage(random, village);
 
-          currentRun = GeneratedWorldRun(
-            seed: run.seed,
-            villages: updatedVillages,
-            ninjas: updatedNinjas,
-            startingVillage: run.startingVillage,
-            rogueCount: currentRun.rogueCount,
-            mapWidthTiles: run.mapWidthTiles,
-            mapHeightTiles: run.mapHeightTiles,
-            allVillages: run.allVillages,
-          );
+      // Store this village and its ninjas in the database
+      await _database.storeRemainingNinjas(
+        seed: run.seed,
+        villages: [village],
+        ninjas: villageNinjas,
+        startingVillageId: run.startingVillage.id,
+      );
 
-          if (mounted) {
-            setState(() {
-              _run = currentRun;
-            });
-          }
+      // Update in-memory run state progressively
+      final updatedVillages = List<GeneratedVillage>.from(currentRun.villages)..add(village);
+      final updatedNinjas = List<GeneratedNinja>.from(currentRun.ninjas)..addAll(villageNinjas);
 
-          // Small delay (100ms) to ensure smooth background processing and map redrawing
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
+      currentRun = GeneratedWorldRun(
+        seed: run.seed,
+        villages: updatedVillages,
+        ninjas: updatedNinjas,
+        startingVillage: run.startingVillage,
+        rogueCount: currentRun.rogueCount,
+        mapWidthTiles: run.mapWidthTiles,
+        mapHeightTiles: run.mapHeightTiles,
+        allVillages: run.allVillages,
+      );
+    }
 
-        // Finally, generate rogue ninjas
-        final rogueNinjas = generator.generateRogueNinjas(random, generator.allPreCalculatedVillages.length);
-        await _database.storeRemainingNinjas(
-          seed: run.seed,
-          villages: [],
-          ninjas: rogueNinjas,
-          startingVillageId: run.startingVillage.id,
-        );
+    // Generate rogue ninjas
+    _updateLoading('Generating rogue ninjas...', 0.9);
+    await Future.delayed(const Duration(milliseconds: 50));
 
-        final finalRun = GeneratedWorldRun(
-          seed: run.seed,
-          villages: currentRun.villages,
-          ninjas: List<GeneratedNinja>.from(currentRun.ninjas)..addAll(rogueNinjas),
-          startingVillage: run.startingVillage,
-          rogueCount: rogueNinjas.length,
-          mapWidthTiles: run.mapWidthTiles,
-          mapHeightTiles: run.mapHeightTiles,
-          allVillages: run.allVillages,
-        );
+    final rogueNinjas = generator.generateRogueNinjas(random, generator.allPreCalculatedVillages.length);
+    await _database.storeRemainingNinjas(
+      seed: run.seed,
+      villages: [],
+      ninjas: rogueNinjas,
+      startingVillageId: run.startingVillage.id,
+    );
 
-        if (mounted) {
-          setState(() {
-            _run = finalRun;
-          });
-        }
-      } catch (_) {
-        // Gracefully handle background exception
-      }
-    });
+    final finalRun = GeneratedWorldRun(
+      seed: run.seed,
+      villages: currentRun.villages,
+      ninjas: List<GeneratedNinja>.from(currentRun.ninjas)..addAll(rogueNinjas),
+      startingVillage: run.startingVillage,
+      rogueCount: rogueNinjas.length,
+      mapWidthTiles: run.mapWidthTiles,
+      mapHeightTiles: run.mapHeightTiles,
+      allVillages: run.allVillages,
+    );
 
-    // Phase 4: enter the game immediately.
-    _updateLoading('Entering the world...', 0.9);
-    setState(() {
-      _profile = profile;
-      _run = run;
-      _stage = _FirstDemoStage.game;
-    });
+    // Finalize world layout generation
+    final layoutData = await const WorldLayoutGenerator().generateWorldLayout(
+      run: finalRun,
+      mapConfig: widget.config.world.map,
+      onProgress: (villageName, index, total) {
+        final progress = 0.90 + (0.08 * (index / total));
+        _updateLoading('Structuring layout: $villageName', progress);
+      },
+    );
+
+    _updateLoading('Entering the world...', 1.0);
+    await Future.delayed(const Duration(milliseconds: 50));
+
+    if (mounted) {
+      setState(() {
+        _profile = profile;
+        _run = finalRun;
+        _layoutData = layoutData;
+        _stage = _FirstDemoStage.game;
+      });
+    }
   }
 
   void _updateLoading(String message, double progress) {
-    setState(() {
-      _loadingMessage = message;
-      _loadingProgress = progress;
-    });
+    if (mounted) {
+      setState(() {
+        _loadingMessage = message;
+        _loadingProgress = progress;
+      });
+    }
   }
 
   void _showSettingsMessage() {

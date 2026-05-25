@@ -4,17 +4,26 @@ import 'package:yaml/yaml.dart';
 import 'yaml_readers.dart';
 
 class AppConfig {
-  const AppConfig({required this.brand, required this.menu});
+  const AppConfig({
+    required this.brand,
+    required this.menu,
+    required this.mainMenuStyle,
+    required this.characterMenuStyle,
+  });
 
   factory AppConfig.fromYaml(YamlMap yaml) {
     return AppConfig(
       brand: BrandConfig.fromYaml(yaml['brand'] as YamlMap),
       menu: MainMenuConfig.fromYaml(yaml['menu'] as YamlMap),
+      mainMenuStyle: MenuStyleConfig.fromYaml(yaml['main_menu_style'] as YamlMap),
+      characterMenuStyle: MenuStyleConfig.fromYaml(yaml['character_menu_style'] as YamlMap),
     );
   }
 
   final BrandConfig brand;
   final MainMenuConfig menu;
+  final MenuStyleConfig mainMenuStyle;
+  final MenuStyleConfig characterMenuStyle;
 }
 
 class BrandConfig {
@@ -71,4 +80,48 @@ class MainMenuConfig {
   final Map<String, String> actions;
   final String settingsMessage;
   final String exitMessage;
+}
+
+class MenuStyleConfig {
+  const MenuStyleConfig({
+    required this.buttonColor,
+    required this.buttonTextColor,
+    required this.buttonWidth,
+    required this.buttonHeight,
+    required this.spacing,
+    required this.borderRadius,
+    required this.fontSize,
+    required this.buttonShape,
+    required this.backgroundColor,
+    required this.titleColor,
+    required this.titleSize,
+  });
+
+  factory MenuStyleConfig.fromYaml(YamlMap yaml) {
+    return MenuStyleConfig(
+      buttonColor: readHexColor(yaml, 'button_color'),
+      buttonTextColor: readHexColor(yaml, 'button_text_color'),
+      buttonWidth: readDouble(yaml, 'button_width'),
+      buttonHeight: readDouble(yaml, 'button_height'),
+      spacing: readDouble(yaml, 'spacing'),
+      borderRadius: readDouble(yaml, 'border_radius'),
+      fontSize: readDouble(yaml, 'font_size'),
+      buttonShape: readString(yaml, 'button_shape'),
+      backgroundColor: readHexColor(yaml, 'background_color'),
+      titleColor: readHexColor(yaml, 'title_color'),
+      titleSize: readDouble(yaml, 'title_size'),
+    );
+  }
+
+  final Color buttonColor;
+  final Color buttonTextColor;
+  final double buttonWidth;
+  final double buttonHeight;
+  final double spacing;
+  final double borderRadius;
+  final double fontSize;
+  final String buttonShape;
+  final Color backgroundColor;
+  final Color titleColor;
+  final double titleSize;
 }

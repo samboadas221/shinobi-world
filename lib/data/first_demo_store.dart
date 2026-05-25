@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:drift/drift.dart';
 
 import '../character/player_profile.dart';
+import '../character/ninja_stats.dart';
 import '../world/generated_world_run.dart';
 
 class FirstDemoStore {
@@ -47,9 +48,21 @@ class FirstDemoStore {
       'spent_points TEXT NOT NULL, '
       'clothing TEXT NOT NULL, '
       'clothing_color_label TEXT NOT NULL, '
-      'created_at TEXT NOT NULL'
+      'created_at TEXT NOT NULL, '
+      'stats_level INTEGER NOT NULL DEFAULT 1, '
+      'stats_tiers TEXT NOT NULL DEFAULT \'{}\''
       ')',
     );
+    await _database.customStatement(
+      'CREATE TABLE IF NOT EXISTS first_demo_player_jutsus ('
+      'run_seed INTEGER NOT NULL, '
+      'jutsu_id TEXT NOT NULL, '
+      'level INTEGER NOT NULL, '
+      'exp INTEGER NOT NULL, '
+      'PRIMARY KEY (run_seed, jutsu_id)'
+      ')',
+    );
+    await _tryAddProfileStatsColumns();
   }
 
   Future<void> storeRun({
@@ -113,6 +126,10 @@ class FirstDemoStore {
 
   Future<void> _deleteRun(int seed) async {
     await _database.customStatement(
+      'DELETE FROM first_demo_player_jutsus WHERE run_seed = ?',
+      [seed],
+    );
+    await _database.customStatement(
       'DELETE FROM first_demo_ninjas WHERE run_seed = ?',
       [seed],
     );
@@ -132,7 +149,10 @@ class FirstDemoStore {
 
   Future<void> _insertPlayerProfile(PlayerProfile profile, int seed) {
     return _database.customStatement(
-      'INSERT INTO first_demo_player_profiles VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT OR REPLACE INTO first_demo_player_profiles '
+      '(run_seed, name, gender, natural_nature, secondary_nature, secondary_cost_multiplier, '
+      'total_points, spent_points, clothing, clothing_color_label, created_at, stats_level, stats_tiers) '
+      'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [
         seed,
         profile.name,
@@ -141,10 +161,12 @@ class FirstDemoStore {
         profile.secondaryNature,
         profile.secondaryChakraCostMultiplier,
         profile.totalPoints,
-        jsonEncode(profile.spentPoints),
+        jsonEncode(profile.stats.spentPoints),
         jsonEncode(profile.clothing),
         profile.clothingColorLabel,
         DateTime.now().toIso8601String(),
+        profile.stats.level,
+        jsonEncode(profile.stats.scalingTiers),
       ],
     );
   }
@@ -191,9 +213,74 @@ class FirstDemoStore {
         ninja.alignment,
         ninja.bingoListed ? 1 : 0,
         ninja.active ? 1 : 0,
-        jsonEncode(ninja.stats),
+        jsonEncode(ninja.stats.toJson()),
       ],
     );
+  }
+
+  Future<void> savePlayerJutsu({
+    required int seed,
+    required String jutsuId,
+    required int level,
+    required int exp,
+  }) async {
+    await _database.customStatement(
+      'INSERT OR REPLACE INTO first_demo_player_jutsus (run_seed, jutsu_id, level, exp) '
+      'VALUES (?, ?, ?, ?)',
+      [seed, jutsuId, level, exp],
+    );
+  }
+
+  Future<List<Map<String, dynamic>>> loadPlayerJutsus(int seed) async {
+    try {
+      final rows = await _database.customSelect(
+        'SELECT jutsu_id, level, exp FROM first_demo_player_jutsus WHERE run_seed = $seed',
+      ).get();
+      return rows.map((row) => {
+        'jutsu_id': row.read<String>('jutsu_id'),
+        'level': row.read<int>('level'),
+        'exp': row.read<int>('exp'),
+      }).toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<PlayerProfile?> loadPlayerProfile(int seed) async {
+    try {
+      final rows = await _database.customSelect(
+        'SELECT * FROM first_demo_player_profiles WHERE run_seed = $seed',
+      ).get();
+      if (rows.isEmpty) return null;
+      final row = rows.first;
+
+      final spentPointsJson = jsonDecode(row.read<String>('spent_points')) as Map<String, dynamic>;
+      final spentPoints = spentPointsJson.map((k, v) => MapEntry(k, v as int));
+
+      final clothingJson = jsonDecode(row.read<String>('clothing')) as Map<String, dynamic>;
+      final clothing = clothingJson.map((k, v) => MapEntry(k, v as String));
+
+      final statsLevel = row.read<int?>('stats_level') ?? 1;
+      final statsTiersJson = jsonDecode(row.read<String?>('stats_tiers') ?? '{}') as Map<String, dynamic>;
+      final statsTiers = statsTiersJson.map((k, v) => MapEntry(k, v as String));
+
+      return PlayerProfile(
+        name: row.read<String>('name'),
+        gender: row.read<String>('gender'),
+        naturalNature: row.read<String>('natural_nature'),
+        secondaryNature: row.read<String>('secondary_nature'),
+        secondaryChakraCostMultiplier: row.read<double>('secondary_cost_multiplier'),
+        stats: NinjaStats(
+          level: statsLevel,
+          scalingTiers: statsTiers,
+          spentPoints: spentPoints,
+        ),
+        clothing: clothing,
+        clothingColorLabel: row.read<String>('clothing_color_label'),
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _tryAddNinjaStatsColumn() async {
@@ -205,6 +292,21 @@ class FirstDemoStore {
     } catch (_) {
       return;
     }
+  }
+
+  Future<void> _tryAddProfileStatsColumns() async {
+    try {
+      await _database.customStatement(
+        'ALTER TABLE first_demo_player_profiles '
+        'ADD COLUMN stats_level INTEGER NOT NULL DEFAULT 1',
+      );
+    } catch (_) {}
+    try {
+      await _database.customStatement(
+        'ALTER TABLE first_demo_player_profiles '
+        "ADD COLUMN stats_tiers TEXT NOT NULL DEFAULT '{}'",
+      );
+    } catch (_) {}
   }
 
   Future<void> _tryAddVillageLocationColumns() async {

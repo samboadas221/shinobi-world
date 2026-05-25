@@ -11,6 +11,9 @@ import '../combat/battle_result.dart';
 import '../config/game_config.dart';
 import '../config/models/enemy_config.dart';
 import '../config/models/jutsu_config.dart';
+import '../config/models/player_config.dart';
+import '../config/models/count_range.dart';
+import '../config/models/visual_config.dart';
 import '../data/shinobi_database.dart';
 import '../jutsu/jutsu_loadout_selector.dart';
 import '../jutsu/overworld_practice_controller.dart';
@@ -23,7 +26,6 @@ import 'npc_manager_component.dart';
 import 'player_component.dart';
 import 'procedural_world_map.dart';
 import 'world_layout/world_layout_data.dart';
-import 'world_layout/world_layout_generator.dart';
 import 'package:flutter/material.dart' show Colors, Paint, EdgeInsets;
 import 'package:flame/experimental.dart';
 
@@ -34,13 +36,14 @@ class ShinobiWorldGame extends FlameGame
     required this.database,
     required this.profile,
     required this.run,
+    required this.layoutData,
   }) : _cycle = DayNightCycle(config.world.time);
 
   final GameConfig config;
   final ShinobiDatabase database;
   final PlayerProfile profile;
   GeneratedWorldRun run;
-  late final WorldLayoutData layoutData;
+  final WorldLayoutData layoutData;
   final ValueNotifier<DemoState> demoState = ValueNotifier(DemoState.empty());
   final ValueNotifier<BattleRequest?> encounterRequest = ValueNotifier(null);
   final DayNightCycle _cycle;
@@ -53,23 +56,26 @@ class ShinobiWorldGame extends FlameGame
   EnemyComponent? _collidingEnemy;
   JoystickComponent? joystick;
   late final OverworldPracticeController _practice;
+  OverworldPracticeController get practice => _practice;
   late int _currentHealth;
   late int _enemyHealth;
   late int _enemyChakra;
   double _encounterCooldown = 0;
   bool _encounterStarted = false;
+  bool _playerLoaded = false;
   String _databaseStatus = 'Preparing local database';
 
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     _chooseLoadouts();
-    _currentHealth = config.player.maxHealth;
+    _currentHealth = profile.stats.calculate('HP', config.statsScaling);
     _practice = OverworldPracticeController(
-      player: config.player,
       training: config.training,
       profile: profile,
       jutsu: playerJutsu,
+      statsScaling: config.statsScaling,
+      jutsuProgression: config.jutsuProgression,
     );
 
     await _loadWorld();
@@ -100,10 +106,15 @@ class ShinobiWorldGame extends FlameGame
     _currentHealth = result.playerEndHealth;
     _practice.currentChakra = result.playerEndChakra;
 
+    // Award EXP for jutsus cast in battle
+    for (final jutsuId in result.castedJutsuIds) {
+      _practice.awardJutsuBattleExp(jutsuId, seed: run.seed, database: database);
+    }
+
     // If defeated, reset for demo purposes
     if (result.defeated) {
-      _currentHealth = config.player.maxHealth;
-      _practice.currentChakra = config.player.maxChakra;
+      _currentHealth = profile.stats.calculate('HP', config.statsScaling);
+      _practice.currentChakra = _practice.maxChakra;
     }
     resumeEngine();
     _publishState();
@@ -112,7 +123,7 @@ class ShinobiWorldGame extends FlameGame
   /// Returns the display name of the practiced jutsu, or null if
   /// the player doesn't have enough chakra.
   String? practiceJutsu(String jutsuId) {
-    final result = _practice.practiceJutsu(jutsuId);
+    final result = _practice.practiceJutsu(jutsuId, seed: run.seed, database: database);
     _publishState();
     return result;
   }
@@ -123,12 +134,6 @@ class ShinobiWorldGame extends FlameGame
   }
 
   Future<void> _loadWorld() async {
-    const layoutGenerator = WorldLayoutGenerator();
-    layoutData = layoutGenerator.generateWorldLayout(
-      run: run,
-      mapConfig: config.world.map,
-    );
-
     final map = ProceduralWorldMap(
       config: config.world.map,
       run: run,
@@ -147,6 +152,7 @@ class ShinobiWorldGame extends FlameGame
       spawnPosition: spawnPosition,
     );
     world.add(player);
+    _playerLoaded = true;
 
     final npcManager = NpcManagerComponent(configs: config.enemies);
     world.add(npcManager);
@@ -214,13 +220,53 @@ class ShinobiWorldGame extends FlameGame
       chakraNature: profile.naturalNature,
       secondaryNature: profile.secondaryNature,
     );
-    _enemyConfig = config.enemies[_random.nextInt(config.enemies.length)];
-    _enemyJutsu = selector.chooseEnemyJutsu(
-      config: _enemyConfig,
-      allJutsu: config.jutsus,
-    );
-    _enemyHealth = _enemyConfig.stats['health']!;
-    _enemyChakra = _enemyConfig.stats['chakra']!;
+    if (config.enemies.isNotEmpty) {
+      _enemyConfig = config.enemies[_random.nextInt(config.enemies.length)];
+      _enemyJutsu = selector.chooseEnemyJutsu(
+        config: _enemyConfig,
+        allJutsu: config.jutsus,
+      );
+      _enemyHealth = _enemyConfig.stats['health']!;
+      _enemyChakra = _enemyConfig.stats['chakra']!;
+    } else {
+      _enemyConfig = EnemyConfig(
+        id: 'dummy',
+        displayName: 'Dummy Scout',
+        ai: const EnemyAiConfig(
+          jutsuPreference: 0.5,
+          aggression: 0.5,
+          retreatHealthRatio: 0.2,
+        ),
+        spawn: const EnemySpawnConfig(
+          spawnRatePerMinute: 0,
+          maxActive: 0,
+          spawnCheckSeconds: 9999,
+          spawnChancePerCheck: 0,
+          spawnDistanceMin: 0,
+          spawnDistanceMax: 0,
+          despawnDistanceMultiplier: 0,
+        ),
+        stats: const {
+          'health': 100,
+          'chakra': 100,
+          'attack': 10,
+          'defense': 5,
+          'speed': 10,
+        },
+        visual: const VisualConfig(
+          bodyColor: Colors.grey,
+          headbandColor: Colors.black,
+        ),
+        expReward: 50,
+        size: Vector2(32, 32),
+        movementSpeed: 100,
+        jutsuCount: const CountRange(min: 1, max: 1),
+        usableJutsuPool: const [],
+      );
+      _enemyJutsu = const [];
+      _enemyHealth = 100;
+      _enemyChakra = 100;
+    }
   }
 
   Future<void> _prepareDatabase() async {
@@ -233,6 +279,9 @@ class ShinobiWorldGame extends FlameGame
         chakraNature: jutsu.chakraNature,
       );
     }
+    final progressList = await database.loadPlayerJutsus(run.seed);
+    _practice.initJutsuProgress(progressList);
+
     final tableCount = await database.contentTableCount();
     _databaseStatus = '$tableCount content tables ready';
   }
@@ -269,10 +318,27 @@ class ShinobiWorldGame extends FlameGame
     _enemyHealth = _enemyConfig.stats['health']!;
     _enemyChakra = _enemyConfig.stats['chakra']!;
 
+    final dynamicPlayerConfig = PlayerConfig(
+      displayName: profile.name,
+      movementSpeed: config.player.movementSpeed,
+      size: config.player.size,
+      visual: config.player.visual,
+      maxHealth: profile.stats.calculate('HP', config.statsScaling),
+      maxChakra: profile.stats.calculate('CP', config.statsScaling),
+      stats: PlayerStats(
+        speed: profile.stats.calculate('Speed', config.statsScaling),
+        attack: profile.stats.calculate('Taijutsu', config.statsScaling),
+        defense: profile.stats.calculate('Armor', config.statsScaling),
+      ),
+      chakraNaturePool: config.player.chakraNaturePool,
+      startingJutsuCount: config.player.startingJutsuCount,
+      starterJutsuPool: config.player.starterJutsuPool,
+    );
+
     _encounterStarted = true;
     player.resetMovement();
     encounterRequest.value = BattleRequest(
-      player: config.player,
+      player: dynamicPlayerConfig,
       playerName: profile.name,
       playerChakraNature: profile.naturalNature,
       playerSecondaryNature: profile.secondaryNature,
@@ -302,12 +368,14 @@ class ShinobiWorldGame extends FlameGame
       playerSecondaryNature: profile.secondaryNature,
       playerJutsuNames: playerJutsu.map((jutsu) => jutsu.displayName).toList(),
       currentChakra: _practice.currentChakra,
-      maxChakra: config.player.maxChakra,
+      maxChakra: _practice.maxChakra,
       practiceLog: _practice.practiceLog,
       practiceJutsus: _practice.practiceStates(),
       enemyName: _enemyConfig.displayName,
       enemyJutsuNames: _enemyJutsu.map((jutsu) => jutsu.displayName).toList(),
       databaseStatus: _databaseStatus,
+      playerTileX: _playerLoaded ? player.position.x / config.world.map.tileSize : 0.0,
+      playerTileY: _playerLoaded ? player.position.y / config.world.map.tileSize : 0.0,
     );
   }
 }

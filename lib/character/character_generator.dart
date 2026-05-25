@@ -3,6 +3,7 @@ import 'dart:math';
 import '../config/models/character_config.dart';
 import '../config/models/clothing_config.dart';
 import 'character_roll.dart';
+import 'ninja_stats.dart';
 
 class CharacterGenerator {
   CharacterGenerator({
@@ -17,15 +18,15 @@ class CharacterGenerator {
 
   CharacterRoll roll() {
     final natures = [...creation.naturalNatures]..shuffle(_random);
+    final rolledLevel = _rollRange(1, 10);
+    final stats = NinjaStats.rollNew(level: rolledLevel, random: _random);
+
     return CharacterRoll(
       name: _pick(creation.namePool),
       gender: _pick(creation.genderOptions),
       naturalNature: natures.first,
       secondaryNature: natures[1],
-      totalPoints: _rollRange(creation.pointRoll.min, creation.pointRoll.max),
-      spentPoints: {
-        for (final ability in creation.ability.labels.keys) ability: 0,
-      },
+      stats: stats,
       clothing: {
         for (final entry in clothing.slots.entries)
           entry.key: _pick(entry.value.options),

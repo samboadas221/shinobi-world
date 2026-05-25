@@ -14,6 +14,6 @@ void main() {
     expect(config.worldRun.villageCount.max, 20);
     expect(config.villagePopulation.roleStats['kage'], isNotNull);
     expect(config.training.minimumRequiredSeals, 1);
-    expect(config.enemies.single.spawn.maxActive, 3);
+    expect(config.enemies, isEmpty);
   });
 }

@@ -11,6 +11,8 @@ import 'models/village_population_config.dart';
 import 'models/world_config.dart';
 import 'models/world_rules_config.dart';
 import 'models/world_run_config.dart';
+import 'models/stats_scaling_config.dart';
+import 'models/jutsu_progression_config.dart';
 
 class GameConfig {
   const GameConfig({
@@ -20,7 +22,6 @@ class GameConfig {
     required this.world,
     required this.worldRun,
     required this.villagePopulation,
-    required this.passiveSimulation,
     required this.training,
     required this.player,
     required this.combat,
@@ -28,6 +29,8 @@ class GameConfig {
     required this.jutsus,
     required this.enemies,
     required this.summons,
+    required this.statsScaling,
+    required this.jutsuProgression,
   });
 
   final AppConfig app;
@@ -36,7 +39,6 @@ class GameConfig {
   final WorldConfig world;
   final WorldRunConfig worldRun;
   final VillagePopulationConfig villagePopulation;
-  final PassiveSimulationConfig passiveSimulation;
   final TrainingConfig training;
   final PlayerConfig player;
   final CombatConfig combat;
@@ -44,4 +46,6 @@ class GameConfig {
   final List<JutsuConfig> jutsus;
   final List<EnemyConfig> enemies;
   final List<SummonContractConfig> summons;
+  final StatsScalingConfig statsScaling;
+  final JutsuProgressionConfig jutsuProgression;
 }

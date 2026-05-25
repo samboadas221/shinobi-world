@@ -44,6 +44,7 @@ class _CombatScreenState extends State<CombatScreen> {
         playerChakra: _controller.player.currentChakra,
         enemyHealth: _controller.enemy.currentHealth,
         enemyChakra: _controller.enemy.currentChakra,
+        castedJutsuIds: _controller.castedJutsuIds,
       ),
     );
   }
