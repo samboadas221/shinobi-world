@@ -1,0 +1,16 @@
+jutsu:
+  id: fire_wall
+  display_name: "Fire Wall"
+  chakra_nature: fire
+  damage: 12
+  chakra_cost: 22
+  hand_seals: [ram, dog, tiger, snake]
+  cast_time_seconds: 1.6
+  speed: 15
+  hand_seal_speed: 12
+  chakra_control: 25
+  exp_gain: 6
+  effects:
+    - type: armor_buff
+      value: 6
+      duration_turns: 3

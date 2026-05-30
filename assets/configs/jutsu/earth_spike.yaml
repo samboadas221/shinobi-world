@@ -1,1 +1,12 @@
-jutsu: { id: earth_spike, display_name: Earth Spike, chakra_nature: earth, damage: 19, chakra_cost: 13, hand_seals: [dog, boar], cast_time_seconds: 0.9 }
+jutsu:
+  id: earth_spike
+  display_name: "Earth Spike"
+  chakra_nature: earth
+  damage: 30
+  chakra_cost: 20
+  hand_seals: [boar, ram, snake]
+  cast_time_seconds: 1.4
+  speed: 20
+  hand_seal_speed: 10
+  chakra_control: 25
+  exp_gain: 5

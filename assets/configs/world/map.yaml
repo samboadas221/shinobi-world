@@ -11,7 +11,7 @@ map:
   # (Previously in encounters.yaml — now inline here)
   gameplay:
     collision_starts_combat: true
-    collision_padding: 2.0
+    collision_padding: 16.0
     retrigger_cooldown_seconds: 1.5
 
   visuals:
@@ -204,3 +204,34 @@ map:
         residential_zone:
           house_tiles: { width: { min: 3, max: 6 }, height: { min: 3, max: 6 } }
           target_houses: { min: 80, max: 130 }
+
+  # ── Structure collision ───────────────────────────────────────────────────
+  collision:
+    # Size of each spatial-grid cell in world pixels.
+    grid_cell_size_px: 256.0
+    # Buildings are shrunk inward by this many pixels on each side for leniency.
+    structure_margin_px: 1.0
+
+  # ── NPC spawning ──────────────────────────────────────────────────────────
+  npc_spawn:
+    # How many ninjas to activate per village size tier.
+    small_village_ninja:  { min: 10, max: 20 }
+    medium_village_ninja: { min: 15, max: 40 }
+    big_village_ninja:    { min: 30, max: 80 }
+    # Fraction of spawned ninjas drawn from the starting village (0.0 – 1.0).
+    home_village_ratio: 0.55
+    # Fraction of spawned ninjas that are explicitly hostile rogues (alignment=bad).
+    # These are loaded from a dedicated query to guarantee their presence.
+    hostile_ratio: 0.20
+    # Check interval for spawn/despawn decisions (seconds).
+    spawn_check_interval_seconds: 3.0
+    # Tiles beyond the visible viewport edge where fresh spawns may appear.
+    # New NPCs only appear in this buffer zone (not inside the viewport).
+    spawn_buffer_tiles: 75
+    # Tiles beyond viewport edge where idle NPCs are returned to the DB.
+    despawn_beyond_tiles: 80
+    # Base overworld walk speed for spawned ninjas (pixels per second).
+    walk_speed_px: 38.0
+    # Radius (tiles) around their spawn point that ninjas wander within.
+    wander_radius_tiles: 5
+

@@ -7,7 +7,10 @@ import 'world_layout_data.dart';
 class RoadNetworkGenerator {
   const RoadNetworkGenerator();
 
-  List<GeneratedVillage> getRngConnections(GeneratedVillage village, List<GeneratedVillage> allVillages) {
+  List<GeneratedVillage> getRngConnections(
+    GeneratedVillage village,
+    List<GeneratedVillage> allVillages,
+  ) {
     return _getRngConnections(village, allVillages);
   }
 
@@ -29,7 +32,8 @@ class RoadNetworkGenerator {
     List<LayoutRoad> sourceRoads = roadsA;
     List<LayoutRoad> targetRoads = roadsB;
 
-    final aIsSource = isStartingA || (!isStartingB && _compareIds(villageA.id, villageB.id));
+    final aIsSource =
+        isStartingA || (!isStartingB && _compareIds(villageA.id, villageB.id));
     if (!aIsSource) {
       source = villageB;
       target = villageA;
@@ -152,7 +156,9 @@ class RoadNetworkGenerator {
     if (sourceExtreme != null) {
       sx = sourceExtreme.rect.center.dx;
       sy = sourceExtreme.rect.center.dy;
-      rWidth = isHorizontal ? sourceExtreme.rect.height : sourceExtreme.rect.width;
+      rWidth = isHorizontal
+          ? sourceExtreme.rect.height
+          : sourceExtreme.rect.width;
       rMaterial = sourceExtreme.material;
     }
     if (targetExtreme != null) {
@@ -162,7 +168,7 @@ class RoadNetworkGenerator {
 
     if (isHorizontal) {
       final totalDist = tx - sx;
-      
+
       // Source draws 80% horizontal segment from sx towards tx
       final length = totalDist * 0.8;
       final rx1 = min(sx, sx + length);
@@ -245,8 +251,10 @@ class RoadNetworkGenerator {
 
     for (final other in connections) {
       // Determine drawing priority: starting village draws 80%, other draws 20% + vertical
-      final draw80Percent = isStartingVillage ||
-          (other.id != run.startingVillage.id && _compareIds(village.id, other.id));
+      final draw80Percent =
+          isStartingVillage ||
+          (other.id != run.startingVillage.id &&
+              _compareIds(village.id, other.id));
 
       final dx = other.x - village.x;
       final dy = other.y - village.y;
@@ -310,7 +318,12 @@ class RoadNetworkGenerator {
           final ry2 = max(sy, other.y);
           highways.add(
             LayoutHighway(
-              rect: Rect.fromLTRB(other.x - rWidth / 2, ry1, other.x + rWidth / 2, ry2),
+              rect: Rect.fromLTRB(
+                other.x - rWidth / 2,
+                ry1,
+                other.x + rWidth / 2,
+                ry2,
+              ),
               material: rMaterial,
             ),
           );
@@ -346,7 +359,12 @@ class RoadNetworkGenerator {
           final rx2 = max(sx, other.x);
           highways.add(
             LayoutHighway(
-              rect: Rect.fromLTRB(rx1, other.y - rWidth / 2, rx2, other.y + rWidth / 2),
+              rect: Rect.fromLTRB(
+                rx1,
+                other.y - rWidth / 2,
+                rx2,
+                other.y + rWidth / 2,
+              ),
               material: rMaterial,
             ),
           );
@@ -357,7 +375,10 @@ class RoadNetworkGenerator {
     return highways;
   }
 
-  List<GeneratedVillage> _getRngConnections(GeneratedVillage village, List<GeneratedVillage> allVillages) {
+  List<GeneratedVillage> _getRngConnections(
+    GeneratedVillage village,
+    List<GeneratedVillage> allVillages,
+  ) {
     final connections = <GeneratedVillage>[];
     for (final other in allVillages) {
       if (other.id == village.id || other.id == 'none') continue;
@@ -383,7 +404,11 @@ class RoadNetworkGenerator {
     return idA.compareTo(idB) < 0;
   }
 
-  LayoutRoad? _findExtremeRoad(List<LayoutRoad> roads, double Function(LayoutRoad) getVal, bool findMax) {
+  LayoutRoad? _findExtremeRoad(
+    List<LayoutRoad> roads,
+    double Function(LayoutRoad) getVal,
+    bool findMax,
+  ) {
     if (roads.isEmpty) return null;
     LayoutRoad extreme = roads.first;
     double extremeVal = getVal(extreme);
@@ -428,24 +453,44 @@ class RoadNetworkGenerator {
     for (final r in sortedRoads) {
       final sx = r.rect.center.dx;
       final sy = r.rect.center.dy;
-      
+
       const checkLength = 2000.0;
-      final directionSign = isSource 
-          ? (isHorizontal ? dx.sign : dy.sign) 
+      final directionSign = isSource
+          ? (isHorizontal ? dx.sign : dy.sign)
           : (isHorizontal ? -dx.sign : -dy.sign);
-      
+
       Rect pathRect;
       if (isHorizontal) {
         if (directionSign > 0) {
-          pathRect = Rect.fromLTRB(sx, sy - rWidth / 2, sx + checkLength, sy + rWidth / 2);
+          pathRect = Rect.fromLTRB(
+            sx,
+            sy - rWidth / 2,
+            sx + checkLength,
+            sy + rWidth / 2,
+          );
         } else {
-          pathRect = Rect.fromLTRB(sx - checkLength, sy - rWidth / 2, sx, sy + rWidth / 2);
+          pathRect = Rect.fromLTRB(
+            sx - checkLength,
+            sy - rWidth / 2,
+            sx,
+            sy + rWidth / 2,
+          );
         }
       } else {
         if (directionSign > 0) {
-          pathRect = Rect.fromLTRB(sx - rWidth / 2, sy, sx + rWidth / 2, sy + checkLength);
+          pathRect = Rect.fromLTRB(
+            sx - rWidth / 2,
+            sy,
+            sx + rWidth / 2,
+            sy + checkLength,
+          );
         } else {
-          pathRect = Rect.fromLTRB(sx - rWidth / 2, sy - checkLength, sx + rWidth / 2, sy);
+          pathRect = Rect.fromLTRB(
+            sx - rWidth / 2,
+            sy - checkLength,
+            sx + rWidth / 2,
+            sy,
+          );
         }
       }
 

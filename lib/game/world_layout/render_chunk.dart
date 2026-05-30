@@ -2,11 +2,7 @@ import 'dart:ui';
 import 'world_layout_data.dart';
 
 class RenderChunk {
-  RenderChunk({
-    required this.cx,
-    required this.cy,
-    required this.rect,
-  });
+  RenderChunk({required this.cx, required this.cy, required this.rect});
 
   final int cx;
   final int cy;

@@ -79,8 +79,10 @@ class BuildingLayoutGenerator {
     final baseRows = tier.gridRows.roll(random);
 
     for (var attempt = 0; attempt < 30; attempt++) {
-      final cols = baseCols + attempt * (tier.gridExpandPerAttemptTiles * 2.5).toInt();
-      final rows = baseRows + attempt * (tier.gridExpandPerAttemptTiles * 2.5).toInt();
+      final cols =
+          baseCols + attempt * (tier.gridExpandPerAttemptTiles * 2.5).toInt();
+      final rows =
+          baseRows + attempt * (tier.gridExpandPerAttemptTiles * 2.5).toInt();
       final tempRoads = <LayoutRoad>[];
       final tempBuildings = <LayoutBuilding>[];
       final tempFields = <LayoutTrainingField>[];
@@ -147,32 +149,74 @@ class BuildingLayoutGenerator {
     // ── 2. Grow spine roads ────────────────────────────────────────────────
     final spinePoints = <_Pos>[];
     final numSpines = g.numSpines.roll(random);
-    final dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]]..shuffle(random);
+    final dirs = [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]..shuffle(random);
 
     for (var s = 0; s < numSpines && s < dirs.length; s++) {
       final d = dirs[s];
       final len = (g.spineLengthFraction.roll(random) * cols).floor();
-      _growRoad(grid, roadGrid, random, coreX, coreY, d[0], d[1], len,
-          cols, rows, g.spineWidthTiles, spinePoints, g);
+      _growRoad(
+        grid,
+        roadGrid,
+        random,
+        coreX,
+        coreY,
+        d[0],
+        d[1],
+        len,
+        cols,
+        rows,
+        g.spineWidthTiles,
+        spinePoints,
+        g,
+      );
     }
     if (spinePoints.isEmpty) return false;
 
     // ── 3. Branch roads with minimum spacing check ─────────────────────────
     final numBranches = g.numBranchesBase + village.size * g.numBranchesPerSize;
-    final branchDirs = [[0, 1], [0, -1], [1, 0], [-1, 0]];
+    final branchDirs = [
+      [0, 1],
+      [0, -1],
+      [1, 0],
+      [-1, 0],
+    ];
     for (var b = 0; b < numBranches; b++) {
       final origin = spinePoints[random.nextInt(spinePoints.length)];
       final dir = branchDirs[random.nextInt(4)];
-      if (_hasTooCloseParallelRoad(roadGrid, origin.x, origin.y,
-          dir[0], dir[1], g.minRoadSpacingTiles, cols, rows)) {
+      if (_hasTooCloseParallelRoad(
+        roadGrid,
+        origin.x,
+        origin.y,
+        dir[0],
+        dir[1],
+        g.minRoadSpacingTiles,
+        cols,
+        rows,
+      )) {
         continue;
       }
       final len = g.branchLengthTiles.roll(random);
-      _growRoad(grid, roadGrid, random, origin.x, origin.y, dir[0], dir[1],
-          len, cols, rows, g.branchWidthTiles, null, g);
+      _growRoad(
+        grid,
+        roadGrid,
+        random,
+        origin.x,
+        origin.y,
+        dir[0],
+        dir[1],
+        len,
+        cols,
+        rows,
+        g.branchWidthTiles,
+        null,
+        g,
+      );
     }
-
-
 
     // ── FIX 1: Spawn tile ─────────────────────────────────────────────────
     // If the village core (spawn point) is surrounded by roads on at least 3
@@ -186,10 +230,12 @@ class BuildingLayoutGenerator {
     for (var x = 0; x < cols; x++) {
       for (var y = 0; y < rows; y++) {
         if (roadGrid[x][y]) {
-          outRoads.add(LayoutRoad(
-            rect: Rect.fromLTWH(startX + x * ts, startY + y * ts, ts, ts),
-            material: stoneMat,
-          ));
+          outRoads.add(
+            LayoutRoad(
+              rect: Rect.fromLTWH(startX + x * ts, startY + y * ts, ts, ts),
+              material: stoneMat,
+            ),
+          );
         }
       }
     }
@@ -203,17 +249,47 @@ class BuildingLayoutGenerator {
     final rotation = random.nextDouble() * 2 * pi;
 
     // ── 7 & 8. Place buildings by zone (mandatory then optional) ──────────
-    if (!_placeZone(tier.militaryZone, _Zone.military,
-        grid, roadGrid, outBuildings, outTrainingFields,
-        coreX, coreY, rotation, milEnd, comEnd,
-        cols, rows, startX, startY, ts, random)) {
+    if (!_placeZone(
+      tier.militaryZone,
+      _Zone.military,
+      grid,
+      roadGrid,
+      outBuildings,
+      outTrainingFields,
+      coreX,
+      coreY,
+      rotation,
+      milEnd,
+      comEnd,
+      cols,
+      rows,
+      startX,
+      startY,
+      ts,
+      random,
+    )) {
       return false;
     }
 
-    if (!_placeZone(tier.commercialZone, _Zone.commercial,
-        grid, roadGrid, outBuildings, outTrainingFields,
-        coreX, coreY, rotation, milEnd, comEnd,
-        cols, rows, startX, startY, ts, random)) {
+    if (!_placeZone(
+      tier.commercialZone,
+      _Zone.commercial,
+      grid,
+      roadGrid,
+      outBuildings,
+      outTrainingFields,
+      coreX,
+      coreY,
+      rotation,
+      milEnd,
+      comEnd,
+      cols,
+      rows,
+      startX,
+      startY,
+      ts,
+      random,
+    )) {
       return false;
     }
 
@@ -241,15 +317,22 @@ class BuildingLayoutGenerator {
       final hh = tier.residentialZone.houseTiles.rollHeight(random);
       if (!_isAreaEmpty(grid, lot.x, lot.y, hw, hh, cols, rows)) continue;
       _occupy(grid, roadGrid, lot.x, lot.y, hw, hh, _kBuilding);
-      outBuildings.add(LayoutBuilding(
-        rect: Rect.fromLTWH(
-            startX + lot.x * ts, startY + lot.y * ts, hw * ts, hh * ts),
-        type: BuildingType.house,
-      ));
+      outBuildings.add(
+        LayoutBuilding(
+          rect: Rect.fromLTWH(
+            startX + lot.x * ts,
+            startY + lot.y * ts,
+            hw * ts,
+            hh * ts,
+          ),
+          type: BuildingType.house,
+        ),
+      );
       housesPlaced++;
     }
 
-    if (housesPlaced < targetHouseCount && housesPlaced < tier.residentialZone.targetHouses.min) {
+    if (housesPlaced < targetHouseCount &&
+        housesPlaced < tier.residentialZone.targetHouses.min) {
       return false;
     }
 
@@ -274,10 +357,16 @@ class BuildingLayoutGenerator {
     List<List<bool>> roadGrid,
     List<LayoutBuilding> outBuildings,
     List<LayoutTrainingField> outTrainingFields,
-    int coreX, int coreY,
-    double rotation, double milEnd, double comEnd,
-    int cols, int rows,
-    double startX, double startY, double ts,
+    int coreX,
+    int coreY,
+    double rotation,
+    double milEnd,
+    double comEnd,
+    int cols,
+    int rows,
+    double startX,
+    double startY,
+    double ts,
     Random random,
   ) {
     // Mandatory: fail generation if any can't be placed
@@ -287,12 +376,20 @@ class BuildingLayoutGenerator {
           entry: entry,
           mandatory: true,
           zone: zone,
-          grid: grid, roadGrid: roadGrid,
-          outBuildings: outBuildings, outTrainingFields: outTrainingFields,
-          coreX: coreX, coreY: coreY,
-          rotation: rotation, milEnd: milEnd, comEnd: comEnd,
-          cols: cols, rows: rows,
-          startX: startX, startY: startY, ts: ts,
+          grid: grid,
+          roadGrid: roadGrid,
+          outBuildings: outBuildings,
+          outTrainingFields: outTrainingFields,
+          coreX: coreX,
+          coreY: coreY,
+          rotation: rotation,
+          milEnd: milEnd,
+          comEnd: comEnd,
+          cols: cols,
+          rows: rows,
+          startX: startX,
+          startY: startY,
+          ts: ts,
           random: random,
         );
         if (!ok) return false;
@@ -306,12 +403,20 @@ class BuildingLayoutGenerator {
           entry: entry,
           mandatory: false,
           zone: zone,
-          grid: grid, roadGrid: roadGrid,
-          outBuildings: outBuildings, outTrainingFields: outTrainingFields,
-          coreX: coreX, coreY: coreY,
-          rotation: rotation, milEnd: milEnd, comEnd: comEnd,
-          cols: cols, rows: rows,
-          startX: startX, startY: startY, ts: ts,
+          grid: grid,
+          roadGrid: roadGrid,
+          outBuildings: outBuildings,
+          outTrainingFields: outTrainingFields,
+          coreX: coreX,
+          coreY: coreY,
+          rotation: rotation,
+          milEnd: milEnd,
+          comEnd: comEnd,
+          cols: cols,
+          rows: rows,
+          startX: startX,
+          startY: startY,
+          ts: ts,
           random: random,
         );
       }
@@ -330,10 +435,16 @@ class BuildingLayoutGenerator {
     required List<List<bool>> roadGrid,
     required List<LayoutBuilding> outBuildings,
     required List<LayoutTrainingField> outTrainingFields,
-    required int coreX, required int coreY,
-    required double rotation, required double milEnd, required double comEnd,
-    required int cols, required int rows,
-    required double startX, required double startY, required double ts,
+    required int coreX,
+    required int coreY,
+    required double rotation,
+    required double milEnd,
+    required double comEnd,
+    required int cols,
+    required int rows,
+    required double startX,
+    required double startY,
+    required double ts,
     required Random random,
   }) {
     final w = entry.tiles.rollWidth(random);
@@ -341,31 +452,69 @@ class BuildingLayoutGenerator {
 
     // Training field → LayoutTrainingField (special type)
     if (entry.type == _kTypeTrainingField) {
-      final pos = _findLot(grid, roadGrid, w, h, zone,
-          coreX, coreY, rotation, milEnd, comEnd, cols, rows, random);
+      final pos = _findLot(
+        grid,
+        roadGrid,
+        w,
+        h,
+        zone,
+        coreX,
+        coreY,
+        rotation,
+        milEnd,
+        comEnd,
+        cols,
+        rows,
+        random,
+      );
       if (pos == null) return !mandatory; // optional: ok; mandatory: fail
       _occupy(grid, roadGrid, pos.x, pos.y, w, h, _kField);
-      outTrainingFields.add(LayoutTrainingField(
-        rect: Rect.fromLTWH(
-            startX + pos.x * ts, startY + pos.y * ts, w * ts, h * ts),
-      ));
+      outTrainingFields.add(
+        LayoutTrainingField(
+          rect: Rect.fromLTWH(
+            startX + pos.x * ts,
+            startY + pos.y * ts,
+            w * ts,
+            h * ts,
+          ),
+        ),
+      );
       return true;
     }
 
     // Central market → fills plaza area with stall clusters
     if (entry.type == _kTypeCentralMarket) {
-      final pos = _findLot(grid, roadGrid, w, h, zone,
-          coreX, coreY, rotation, milEnd, comEnd, cols, rows, random);
+      final pos = _findLot(
+        grid,
+        roadGrid,
+        w,
+        h,
+        zone,
+        coreX,
+        coreY,
+        rotation,
+        milEnd,
+        comEnd,
+        cols,
+        rows,
+        random,
+      );
       if (pos == null) return !mandatory;
       _occupy(grid, roadGrid, pos.x, pos.y, w, h, _kRoad);
       for (var sx = pos.x + 1; sx < pos.x + w - 1; sx += 3) {
         for (var sy = pos.y + 1; sy < pos.y + h - 1; sy += 3) {
           if (sx + 1 < cols && sy + 1 < rows) {
-            outBuildings.add(LayoutBuilding(
-              rect: Rect.fromLTWH(
-                  startX + sx * ts, startY + sy * ts, 2 * ts, 2 * ts),
-              type: BuildingType.centralMarket,
-            ));
+            outBuildings.add(
+              LayoutBuilding(
+                rect: Rect.fromLTWH(
+                  startX + sx * ts,
+                  startY + sy * ts,
+                  2 * ts,
+                  2 * ts,
+                ),
+                type: BuildingType.centralMarket,
+              ),
+            );
           }
         }
       }
@@ -376,31 +525,54 @@ class BuildingLayoutGenerator {
     final type = _buildingTypeFor(entry.type);
     if (type == null) return true; // unknown type — silently skip
 
-    final pos = _findLot(grid, roadGrid, w, h, zone,
-        coreX, coreY, rotation, milEnd, comEnd, cols, rows, random);
+    final pos = _findLot(
+      grid,
+      roadGrid,
+      w,
+      h,
+      zone,
+      coreX,
+      coreY,
+      rotation,
+      milEnd,
+      comEnd,
+      cols,
+      rows,
+      random,
+    );
     if (pos == null) return !mandatory;
     _occupy(grid, roadGrid, pos.x, pos.y, w, h, _kBuilding);
-    outBuildings.add(LayoutBuilding(
-      rect: Rect.fromLTWH(
-          startX + pos.x * ts, startY + pos.y * ts, w * ts, h * ts),
-      type: type,
-    ));
+    outBuildings.add(
+      LayoutBuilding(
+        rect: Rect.fromLTWH(
+          startX + pos.x * ts,
+          startY + pos.y * ts,
+          w * ts,
+          h * ts,
+        ),
+        type: type,
+      ),
+    );
     return true;
   }
 
   // ── Road growth ──────────────────────────────────────────────────────────
 
   void _growRoad(
-      List<List<int>> grid,
-      List<List<bool>> roadGrid,
-      Random random,
-      int sx, int sy,
-      int dx, int dy,
-      int length,
-      int cols, int rows,
-      int width,
-      List<_Pos>? trackPoints,
-      VillageGeneratorGlobalConfig g) {
+    List<List<int>> grid,
+    List<List<bool>> roadGrid,
+    Random random,
+    int sx,
+    int sy,
+    int dx,
+    int dy,
+    int length,
+    int cols,
+    int rows,
+    int width,
+    List<_Pos>? trackPoints,
+    VillageGeneratorGlobalConfig g,
+  ) {
     int x = sx, y = sy;
     int curDx = dx, curDy = dy;
     int stepsUntilTurn = g.straightRunTiles.roll(random);
@@ -436,11 +608,15 @@ class BuildingLayoutGenerator {
   }
 
   bool _hasTooCloseParallelRoad(
-      List<List<bool>> roadGrid,
-      int sx, int sy,
-      int branchDx, int branchDy,
-      int minSpacing,
-      int cols, int rows) {
+    List<List<bool>> roadGrid,
+    int sx,
+    int sy,
+    int branchDx,
+    int branchDy,
+    int minSpacing,
+    int cols,
+    int rows,
+  ) {
     final perpX = branchDy.abs();
     final perpY = branchDx.abs();
     for (var d = 1; d <= minSpacing; d++) {
@@ -453,14 +629,17 @@ class BuildingLayoutGenerator {
     return false;
   }
 
-
-
   // ── Spawn tile helper ─────────────────────────────────────────────────────
 
   /// Returns true if at least 3 of the 4 cardinal neighbors of (x, y) are roads.
   /// Used to decide whether the village spawn/core tile should be paved over.
   bool _isSurroundedByRoads(
-      List<List<bool>> roadGrid, int x, int y, int cols, int rows) {
+    List<List<bool>> roadGrid,
+    int x,
+    int y,
+    int cols,
+    int rows,
+  ) {
     int count = 0;
     for (final d in [
       [x - 1, y],
@@ -468,7 +647,10 @@ class BuildingLayoutGenerator {
       [x, y - 1],
       [x, y + 1],
     ]) {
-      if (d[0] >= 0 && d[0] < cols && d[1] >= 0 && d[1] < rows &&
+      if (d[0] >= 0 &&
+          d[0] < cols &&
+          d[1] >= 0 &&
+          d[1] < rows &&
           roadGrid[d[0]][d[1]]) {
         count++;
       }
@@ -479,19 +661,32 @@ class BuildingLayoutGenerator {
   // ── Building lot helpers ──────────────────────────────────────────────────
 
   _Pos? _findLot(
-      List<List<int>> grid,
-      List<List<bool>> roadGrid,
-      int w, int h,
-      _Zone targetZone,
-      int coreX, int coreY,
-      double rotation, double milEnd, double comEnd,
-      int cols, int rows,
-      Random random) {
+    List<List<int>> grid,
+    List<List<bool>> roadGrid,
+    int w,
+    int h,
+    _Zone targetZone,
+    int coreX,
+    int coreY,
+    double rotation,
+    double milEnd,
+    double comEnd,
+    int cols,
+    int rows,
+    Random random,
+  ) {
     final candidates = <_Pos>[];
     for (var x = 0; x <= cols - w; x++) {
       for (var y = 0; y <= rows - h; y++) {
         final zone = _tileZone(
-            x + w ~/ 2, y + h ~/ 2, coreX, coreY, rotation, milEnd, comEnd);
+          x + w ~/ 2,
+          y + h ~/ 2,
+          coreX,
+          coreY,
+          rotation,
+          milEnd,
+          comEnd,
+        );
         if (zone != targetZone) continue;
         if (!_isAreaEmpty(grid, x, y, w, h, cols, rows)) continue;
         if (!_hasRoadNeighbor(roadGrid, x, y, w, h, cols, rows)) continue;
@@ -502,21 +697,39 @@ class BuildingLayoutGenerator {
     return candidates[random.nextInt(candidates.length)];
   }
 
-  _Zone _tileZone(int tx, int ty, int coreX, int coreY, double rotation,
-      double milEnd, double comEnd) {
+  _Zone _tileZone(
+    int tx,
+    int ty,
+    int coreX,
+    int coreY,
+    double rotation,
+    double milEnd,
+    double comEnd,
+  ) {
     final dx = tx - coreX;
     final dy = ty - coreY;
     if (dx == 0 && dy == 0) return _Zone.residential;
     var angle = atan2(dy.toDouble(), dx.toDouble()) - rotation;
-    while (angle < 0) { angle += 2 * pi; }
-    while (angle >= 2 * pi) { angle -= 2 * pi; }
+    while (angle < 0) {
+      angle += 2 * pi;
+    }
+    while (angle >= 2 * pi) {
+      angle -= 2 * pi;
+    }
     if (angle < milEnd) return _Zone.military;
     if (angle < comEnd) return _Zone.commercial;
     return _Zone.residential;
   }
 
   bool _isAreaEmpty(
-      List<List<int>> grid, int x, int y, int w, int h, int cols, int rows) {
+    List<List<int>> grid,
+    int x,
+    int y,
+    int w,
+    int h,
+    int cols,
+    int rows,
+  ) {
     if (x < 0 || y < 0 || x + w > cols || y + h > rows) return false;
     for (var i = 0; i < w; i++) {
       for (var j = 0; j < h; j++) {
@@ -526,8 +739,15 @@ class BuildingLayoutGenerator {
     return true;
   }
 
-  bool _hasRoadNeighbor(List<List<bool>> roadGrid, int x, int y, int w, int h,
-      int cols, int rows) {
+  bool _hasRoadNeighbor(
+    List<List<bool>> roadGrid,
+    int x,
+    int y,
+    int w,
+    int h,
+    int cols,
+    int rows,
+  ) {
     for (var i = -1; i <= w; i++) {
       for (var j = -1; j <= h; j++) {
         if (i >= 0 && i < w && j >= 0 && j < h) continue;
@@ -541,8 +761,15 @@ class BuildingLayoutGenerator {
     return false;
   }
 
-  void _occupy(List<List<int>> grid, List<List<bool>> roadGrid,
-      int x, int y, int w, int h, int type) {
+  void _occupy(
+    List<List<int>> grid,
+    List<List<bool>> roadGrid,
+    int x,
+    int y,
+    int w,
+    int h,
+    int type,
+  ) {
     for (var i = 0; i < w; i++) {
       for (var j = 0; j < h; j++) {
         if (x + i < grid.length && y + j < grid[0].length) {

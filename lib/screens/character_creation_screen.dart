@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 
 import '../character/character_generator.dart';
@@ -85,7 +84,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
     final style = widget.style;
     final shape = _getButtonShape();
     final totalPoints = (_roll.stats.level - 1) * 20;
-    final spentSum = _roll.stats.spentPoints.values.fold(0, (sum, val) => sum + val);
+    final spentSum = _roll.stats.spentPoints.values.fold(
+      0,
+      (sum, val) => sum + val,
+    );
     final unspent = totalPoints - spentSum;
 
     const spendableStats = [
@@ -97,7 +99,7 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
       'SpeedSeal',
       'ChakraControl',
       'ChakraBuffer',
-      'Taijutsu'
+      'Taijutsu',
     ];
 
     final statNames = {
@@ -122,7 +124,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Color.alphaBlend(Colors.white.withOpacity(0.02), style.backgroundColor),
+                color: Color.alphaBlend(
+                  Colors.white.withOpacity(0.02),
+                  style.backgroundColor,
+                ),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(color: style.buttonColor.withOpacity(0.2)),
               ),
@@ -153,10 +158,14 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                               labelText: widget.creation.labels.name,
                               labelStyle: TextStyle(color: style.buttonColor),
                               enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: style.buttonColor.withOpacity(0.5)),
+                                borderSide: BorderSide(
+                                  color: style.buttonColor.withOpacity(0.5),
+                                ),
                               ),
                               focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: style.buttonColor),
+                                borderSide: BorderSide(
+                                  color: style.buttonColor,
+                                ),
                               ),
                             ),
                             onChanged: (value) =>
@@ -167,7 +176,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                             children: [
                               Text(
                                 '${widget.creation.labels.gender}: ',
-                                style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold),
+                                style: const TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Expanded(
@@ -176,20 +188,30 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                                       .map(
                                         (gender) => ButtonSegment(
                                           value: gender,
-                                          label: Text(gender, style: const TextStyle(fontSize: 12)),
+                                          label: Text(
+                                            gender,
+                                            style: const TextStyle(
+                                              fontSize: 12,
+                                            ),
+                                          ),
                                         ),
                                       )
                                       .toList(),
                                   selected: {_roll.gender},
                                   onSelectionChanged: (values) {
-                                    _updateRoll(_roll.copyWith(gender: values.first));
+                                    _updateRoll(
+                                      _roll.copyWith(gender: values.first),
+                                    );
                                   },
                                   style: SegmentedButton.styleFrom(
                                     selectedBackgroundColor: style.buttonColor,
-                                    selectedForegroundColor: style.buttonTextColor,
+                                    selectedForegroundColor:
+                                        style.buttonTextColor,
                                     backgroundColor: Colors.transparent,
                                     foregroundColor: Colors.white,
-                                    side: BorderSide(color: style.buttonColor.withOpacity(0.5)),
+                                    side: BorderSide(
+                                      color: style.buttonColor.withOpacity(0.5),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -210,7 +232,9 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                               Text(
                                 'Unspent Points: $unspent / $totalPoints',
                                 style: TextStyle(
-                                  color: unspent > 0 ? Colors.greenAccent : Colors.white60,
+                                  color: unspent > 0
+                                      ? Colors.greenAccent
+                                      : Colors.white60,
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -238,7 +262,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                       builder: (context) {
                         final tier = _roll.stats.scalingTiers[stat] ?? 'B';
                         final spent = _roll.stats.spentPoints[stat] ?? 0;
-                        final calculated = _roll.stats.calculate(stat, widget.statsScaling);
+                        final calculated = _roll.stats.calculate(
+                          stat,
+                          widget.statsScaling,
+                        );
                         final base = widget.statsScaling.bases[stat] ?? 0.0;
                         final tierColor = _getTierColor(tier);
 
@@ -246,13 +273,17 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                           color: Colors.black38,
                           margin: const EdgeInsets.symmetric(vertical: 4),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             child: Row(
                               children: [
                                 // Stat details
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
@@ -265,11 +296,17 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                                           ),
                                           const SizedBox(width: 8),
                                           Container(
-                                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 2,
+                                            ),
                                             decoration: BoxDecoration(
                                               color: tierColor.withOpacity(0.2),
-                                              border: Border.all(color: tierColor),
-                                              borderRadius: BorderRadius.circular(4),
+                                              border: Border.all(
+                                                color: tierColor,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
                                             ),
                                             child: Text(
                                               tier,
@@ -301,7 +338,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                                       onPressed: spent > 0
                                           ? () => _changeStat(stat, spent - 1)
                                           : null,
-                                      icon: const Icon(Icons.remove, color: Colors.redAccent),
+                                      icon: const Icon(
+                                        Icons.remove,
+                                        color: Colors.redAccent,
+                                      ),
                                     ),
                                     SizedBox(
                                       width: 32,
@@ -319,7 +359,10 @@ class _CharacterCreationScreenState extends State<CharacterCreationScreen> {
                                       onPressed: unspent > 0
                                           ? () => _changeStat(stat, spent + 1)
                                           : null,
-                                      icon: const Icon(Icons.add, color: Colors.greenAccent),
+                                      icon: const Icon(
+                                        Icons.add,
+                                        color: Colors.greenAccent,
+                                      ),
                                     ),
                                   ],
                                 ),

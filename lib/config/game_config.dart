@@ -4,6 +4,7 @@ import 'models/clothing_config.dart';
 import 'models/combat_config.dart';
 import 'models/enemy_config.dart';
 import 'models/jutsu_config.dart';
+import 'models/jutsu_affinity_config.dart';
 import 'models/player_config.dart';
 import 'models/progression_config.dart';
 import 'models/summon_config.dart';
@@ -31,6 +32,7 @@ class GameConfig {
     required this.summons,
     required this.statsScaling,
     required this.jutsuProgression,
+    required this.jutsuAffinities,
   });
 
   final AppConfig app;
@@ -48,4 +50,5 @@ class GameConfig {
   final List<SummonContractConfig> summons;
   final StatsScalingConfig statsScaling;
   final JutsuProgressionConfig jutsuProgression;
+  final JutsuAffinityConfig jutsuAffinities;
 }

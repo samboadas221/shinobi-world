@@ -45,7 +45,7 @@ class WorldLayoutGenerator {
           ? Random(run.seed)
           : Random((run.seed + village.id.hashCode).abs() % 1000000000);
       final villageRoads = <LayoutRoad>[];
-      
+
       final spawnPoint = buildingGen.generateVillageLayout(
         random: villageRandom,
         village: village,
@@ -74,10 +74,10 @@ class WorldLayoutGenerator {
 
       for (final other in connections) {
         // Unique edge key to avoid generating the same highway twice
-        final edgeKey = village.id.compareTo(other.id) < 0 
-            ? '${village.id}_${other.id}' 
+        final edgeKey = village.id.compareTo(other.id) < 0
+            ? '${village.id}_${other.id}'
             : '${other.id}_${village.id}';
-            
+
         if (generatedEdges.contains(edgeKey)) continue;
         generatedEdges.add(edgeKey);
 
@@ -101,7 +101,9 @@ class WorldLayoutGenerator {
       await Future.delayed(const Duration(milliseconds: 5));
     }
 
-    final startingSpawn = villageSpawnPoints[run.startingVillage.id] ?? Point(run.startingVillage.x, run.startingVillage.y);
+    final startingSpawn =
+        villageSpawnPoints[run.startingVillage.id] ??
+        Point(run.startingVillage.x, run.startingVillage.y);
 
     return WorldLayoutData(
       roads: roads,

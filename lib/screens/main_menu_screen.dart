@@ -35,14 +35,20 @@ class MainMenuScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final shape = _getButtonShape();
 
-    Widget buildButton(String label, VoidCallback onPressed, {bool primary = true}) {
+    Widget buildButton(
+      String label,
+      VoidCallback onPressed, {
+      bool primary = true,
+    }) {
       return SizedBox(
         width: style.buttonWidth,
         height: style.buttonHeight,
         child: FilledButton(
           onPressed: onPressed,
           style: FilledButton.styleFrom(
-            backgroundColor: primary ? style.buttonColor : style.buttonColor.withOpacity(0.7),
+            backgroundColor: primary
+                ? style.buttonColor
+                : style.buttonColor.withOpacity(0.7),
             foregroundColor: style.buttonTextColor,
             shape: shape,
             textStyle: TextStyle(
@@ -64,7 +70,10 @@ class MainMenuScreen extends StatelessWidget {
             end: Alignment.bottomCenter,
             colors: [
               style.backgroundColor,
-              Color.alphaBlend(style.buttonColor.withOpacity(0.15), style.backgroundColor),
+              Color.alphaBlend(
+                style.buttonColor.withOpacity(0.15),
+                style.backgroundColor,
+              ),
             ],
           ),
         ),
@@ -101,9 +110,17 @@ class MainMenuScreen extends StatelessWidget {
               const SizedBox(height: 48),
               buildButton(menu.actions['play'] ?? 'Play', onPlay),
               SizedBox(height: style.spacing),
-              buildButton(menu.actions['settings'] ?? 'Settings', onSettings, primary: false),
+              buildButton(
+                menu.actions['settings'] ?? 'Settings',
+                onSettings,
+                primary: false,
+              ),
               SizedBox(height: style.spacing),
-              buildButton(menu.actions['exit'] ?? 'Exit', onExit, primary: false),
+              buildButton(
+                menu.actions['exit'] ?? 'Exit',
+                onExit,
+                primary: false,
+              ),
             ],
           ),
         ),

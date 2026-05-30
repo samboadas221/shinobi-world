@@ -27,10 +27,8 @@ class WorldRunGenerator {
     final mapWidthTiles = mapConfig.mapSizeTiles.rollWidth(random);
     final mapHeightTiles = mapConfig.mapSizeTiles.rollHeight(random);
 
-    final startingVillageName =
-        runConfig.villageNamePool[random.nextInt(
-          runConfig.villageNamePool.length,
-        )];
+    final startingVillageName = runConfig
+        .villageNamePool[random.nextInt(runConfig.villageNamePool.length)];
     final size = _roll(runConfig.villageSize);
 
     final startingVillage = GeneratedVillage(
@@ -38,7 +36,9 @@ class WorldRunGenerator {
       name: startingVillageName,
       size: size,
       sizeLabel: populationConfig.tierForSize(size).label,
-      adultPopulation: _roll(populationConfig.tierForSize(size).adultPopulation),
+      adultPopulation: _roll(
+        populationConfig.tierForSize(size).adultPopulation,
+      ),
       x: (mapWidthTiles * mapConfig.tileSize) / 2,
       y: (mapHeightTiles * mapConfig.tileSize) / 2,
     );
@@ -52,10 +52,8 @@ class WorldRunGenerator {
     for (var i = 1; i < totalCount; i++) {
       String name;
       do {
-        name =
-            runConfig.villageNamePool[random.nextInt(
-              runConfig.villageNamePool.length,
-            )];
+        name = runConfig
+            .villageNamePool[random.nextInt(runConfig.villageNamePool.length)];
       } while (usedNames.contains(name) &&
           usedNames.length < runConfig.villageNamePool.length);
       usedNames.add(name);
@@ -104,7 +102,9 @@ class WorldRunGenerator {
   GeneratedWorldRun generateRemaining(GeneratedWorldRun partialRun) {
     // Kept for backward compatibility / tests
     final random = Random(partialRun.seed);
-    final currentVillages = List<GeneratedVillage>.from(allPreCalculatedVillages);
+    final currentVillages = List<GeneratedVillage>.from(
+      allPreCalculatedVillages,
+    );
     final currentNinjas = List<GeneratedNinja>.from(partialRun.ninjas);
 
     for (final village in currentVillages) {
@@ -127,7 +127,10 @@ class WorldRunGenerator {
     );
   }
 
-  List<GeneratedNinja> generateNinjasForVillage(Random random, GeneratedVillage village) {
+  List<GeneratedNinja> generateNinjasForVillage(
+    Random random,
+    GeneratedVillage village,
+  ) {
     return _createSimpleNinjas(random, village);
   }
 
@@ -146,7 +149,7 @@ class WorldRunGenerator {
           villageId: 'none',
           alignment: 'bad',
           bingoListed: random.nextDouble() <= runConfig.rogue.bingoListChance,
-          active: false,
+          active: true,
           stats: NinjaStats.rollNew(level: rolledLevel, random: random),
         ),
       );
@@ -174,7 +177,7 @@ class WorldRunGenerator {
             villageId: village.id,
             alignment: 'village',
             bingoListed: entry.key == 'bingo_list',
-            active: false,
+            active: true,
             stats: NinjaStats.rollNew(level: rolledLevel, random: random),
           ),
         );

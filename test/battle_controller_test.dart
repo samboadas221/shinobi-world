@@ -68,6 +68,7 @@ void main() {
       enemyJutsu: const [],
       enemyCurrentHealth: 100,
       enemyCurrentChakra: 100,
+      jutsuAffinities: config.jutsuAffinities,
     );
 
     final attackBattle = BattleController(

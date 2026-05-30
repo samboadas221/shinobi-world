@@ -1,4 +1,5 @@
 import '../config/models/enemy_config.dart';
+import '../config/models/jutsu_affinity_config.dart';
 import '../config/models/jutsu_config.dart';
 import '../config/models/player_config.dart';
 
@@ -16,6 +17,7 @@ class BattleRequest {
     required this.enemyJutsu,
     required this.enemyCurrentHealth,
     required this.enemyCurrentChakra,
+    required this.jutsuAffinities,
   });
 
   final PlayerConfig player;
@@ -30,4 +32,5 @@ class BattleRequest {
   final List<JutsuConfig> enemyJutsu;
   final int enemyCurrentHealth;
   final int enemyCurrentChakra;
+  final JutsuAffinityConfig jutsuAffinities;
 }

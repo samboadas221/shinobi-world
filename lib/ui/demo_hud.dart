@@ -44,7 +44,10 @@ class _DemoHudState extends State<DemoHud> {
       builder: (context) {
         return Dialog(
           backgroundColor: Colors.transparent,
-          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 24,
+            vertical: 40,
+          ),
           child: _PlayerMenuDialog(
             profile: widget.profile,
             statsScaling: widget.statsScaling,
@@ -76,10 +79,14 @@ class _DemoHudState extends State<DemoHud> {
                       padding: const EdgeInsets.all(8),
                       child: FloatingActionButton.small(
                         heroTag: 'debug_fab',
-                        onPressed: () => setState(() => _isDebugExpanded = !_isDebugExpanded),
+                        onPressed: () => setState(
+                          () => _isDebugExpanded = !_isDebugExpanded,
+                        ),
                         backgroundColor: Colors.black87,
                         foregroundColor: Colors.greenAccent,
-                        child: Icon(_isDebugExpanded ? Icons.close : Icons.bug_report),
+                        child: Icon(
+                          _isDebugExpanded ? Icons.close : Icons.bug_report,
+                        ),
                       ),
                     ),
                     Padding(
@@ -90,7 +97,10 @@ class _DemoHudState extends State<DemoHud> {
                         backgroundColor: const Color(0xFF2F6F4E),
                         foregroundColor: Colors.white,
                         icon: const Icon(Icons.person),
-                        label: const Text('Player Menu', style: TextStyle(fontWeight: FontWeight.bold)),
+                        label: const Text(
+                          'Player Menu',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
                       ),
                     ),
                   ],
@@ -102,6 +112,7 @@ class _DemoHudState extends State<DemoHud> {
                       return _HudPanel(
                         state: state,
                         onRegenerateWorld: widget.onRegenerateWorld,
+                        game: widget.game,
                       );
                     },
                   ),
@@ -115,10 +126,15 @@ class _DemoHudState extends State<DemoHud> {
 }
 
 class _HudPanel extends StatefulWidget {
-  const _HudPanel({required this.state, required this.onRegenerateWorld});
+  const _HudPanel({
+    required this.state,
+    required this.onRegenerateWorld,
+    required this.game,
+  });
 
   final DemoState state;
   final void Function(int? seed) onRegenerateWorld;
+  final ShinobiWorldGame game;
 
   @override
   State<_HudPanel> createState() => _HudPanelState();
@@ -140,7 +156,11 @@ class _HudPanelState extends State<_HudPanel> {
       widget.onRegenerateWorld(seed);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid seed between 100,000 and 999,999.')),
+        const SnackBar(
+          content: Text(
+            'Please enter a valid seed between 100,000 and 999,999.',
+          ),
+        ),
       );
     }
   }
@@ -180,14 +200,26 @@ class _HudPanelState extends State<_HudPanel> {
                 ],
               ),
               const Divider(color: Colors.white24, height: 16),
-              Text('Run Seed: ${widget.state.runSeed}', style: const TextStyle(color: Colors.white70)),
-              Text('Villages: ${widget.state.villageCount}', style: const TextStyle(color: Colors.white70)),
-              Text('Stored Ninjas: ${widget.state.ninjaCount}', style: const TextStyle(color: Colors.white70)),
+              Text(
+                'Run Seed: ${widget.state.runSeed}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              Text(
+                'Villages: ${widget.state.villageCount}',
+                style: const TextStyle(color: Colors.white70),
+              ),
+              Text(
+                'Stored Ninjas: ${widget.state.ninjaCount}',
+                style: const TextStyle(color: Colors.white70),
+              ),
               Text(
                 'Coordinates: X: ${widget.state.playerTileX.toStringAsFixed(1)}, Y: ${widget.state.playerTileY.toStringAsFixed(1)}',
                 style: const TextStyle(color: Colors.white70),
               ),
-              Text('World Phase: ${widget.state.phase}', style: const TextStyle(color: Colors.white70)),
+              Text(
+                'World Phase: ${widget.state.phase}',
+                style: const TextStyle(color: Colors.white70),
+              ),
               const SizedBox(height: 4),
               LinearProgressIndicator(
                 value: widget.state.cycleProgress,
@@ -195,11 +227,45 @@ class _HudPanelState extends State<_HudPanel> {
                 color: Colors.orangeAccent,
               ),
               const SizedBox(height: 8),
-              Text('Database: ${widget.state.databaseStatus}', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+              Text(
+                'Database: ${widget.state.databaseStatus}',
+                style: const TextStyle(color: Colors.white60, fontSize: 11),
+              ),
+              const Divider(color: Colors.white24, height: 16),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton.icon(
+                  onPressed: () {
+                    widget.game.debugForceEncounter();
+                  },
+                  icon: const Icon(Icons.flash_on, size: 16),
+                  label: const Text(
+                    'Force Encounter (Debug)',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: const Color(0xFF8B2020),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                  ),
+                ),
+              ),
               const Divider(color: Colors.white24, height: 20),
               const Text(
                 'Generate Seed-driven World',
-                style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 8),
               Row(
@@ -209,7 +275,10 @@ class _HudPanelState extends State<_HudPanel> {
                       height: 36,
                       child: TextField(
                         controller: _seedController,
-                        style: const TextStyle(color: Colors.white, fontSize: 13),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                        ),
                         keyboardType: TextInputType.number,
                         inputFormatters: [
                           FilteringTextInputFormatter.digitsOnly,
@@ -217,8 +286,14 @@ class _HudPanelState extends State<_HudPanel> {
                         ],
                         decoration: InputDecoration(
                           hintText: '100000 - 999999',
-                          hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          hintStyle: const TextStyle(
+                            color: Colors.white30,
+                            fontSize: 12,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           fillColor: Colors.white10,
                           filled: true,
                           border: OutlineInputBorder(
@@ -236,10 +311,18 @@ class _HudPanelState extends State<_HudPanel> {
                       onPressed: _triggerRegenerate,
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF2F6F4E),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
                         padding: const EdgeInsets.symmetric(horizontal: 12),
                       ),
-                      child: const Text('Generate', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Generate',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -274,13 +357,19 @@ class _PlayerMenuDialog extends StatefulWidget {
 class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
   Color _getTierColor(String tier) {
     switch (tier) {
-      case 'S': return Colors.amber;
-      case 'A': return Colors.purpleAccent;
-      case 'B': return Colors.blueAccent;
-      case 'C': return Colors.greenAccent;
-      case 'D': return Colors.orangeAccent;
+      case 'S':
+        return Colors.amber;
+      case 'A':
+        return Colors.purpleAccent;
+      case 'B':
+        return Colors.blueAccent;
+      case 'C':
+        return Colors.greenAccent;
+      case 'D':
+        return Colors.orangeAccent;
       case 'E':
-      default: return Colors.grey;
+      default:
+        return Colors.grey;
     }
   }
 
@@ -301,7 +390,10 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
         decoration: BoxDecoration(
           color: const Color(0xFF161616),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.greenAccent.withOpacity(0.3), width: 1.5),
+          border: Border.all(
+            color: Colors.greenAccent.withOpacity(0.3),
+            width: 1.5,
+          ),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.7),
@@ -317,14 +409,21 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: const BoxDecoration(
                 color: Color(0xFF1E1E1E),
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  topRight: Radius.circular(16),
+                ),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
-                      const Icon(Icons.shield, color: Colors.greenAccent, size: 28),
+                      const Icon(
+                        Icons.shield,
+                        color: Colors.greenAccent,
+                        size: 28,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         widget.profile.name.toUpperCase(),
@@ -430,7 +529,11 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                   ),
                   Text(
                     'Nature: ${widget.profile.naturalNature.toUpperCase()}',
-                    style: const TextStyle(color: Colors.orangeAccent, fontSize: 13, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.orangeAccent,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ],
               ),
@@ -439,27 +542,53 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
           const Divider(color: Colors.white12, height: 32),
 
           // HP gauge
-          _buildGauge('HEALTH POINTS (HP)', hp, widget.statsScaling.maxes['HP']!.toInt(), Colors.redAccent),
+          _buildGauge(
+            'HEALTH POINTS (HP)',
+            hp,
+            widget.statsScaling.maxes['HP']!.toInt(),
+            Colors.redAccent,
+          ),
           const SizedBox(height: 16),
 
           // CP gauge
-          _buildGauge('CHAKRA POINTS (CP)', widget.game.demoState.value.currentChakra, cp, Colors.blueAccent),
+          _buildGauge(
+            'CHAKRA POINTS (CP)',
+            widget.game.demoState.value.currentChakra,
+            cp,
+            Colors.blueAccent,
+          ),
           const SizedBox(height: 16),
 
           // SP gauge
-          _buildGauge('SENJUTSU (SP)', sp, widget.statsScaling.maxes['SP']!.toInt(), Colors.purpleAccent),
+          _buildGauge(
+            'SENJUTSU (SP)',
+            sp,
+            widget.statsScaling.maxes['SP']!.toInt(),
+            Colors.purpleAccent,
+          ),
 
           const Divider(color: Colors.white12, height: 32),
           const Text(
             'CHAKRA AFFINITIES',
-            style: TextStyle(color: Colors.white30, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1.0),
+            style: TextStyle(
+              color: Colors.white30,
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 1.0,
+            ),
           ),
           const SizedBox(height: 8),
           Row(
             children: [
-              _buildAffinityBadge(widget.profile.naturalNature, isPrimary: true),
+              _buildAffinityBadge(
+                widget.profile.naturalNature,
+                isPrimary: true,
+              ),
               const SizedBox(width: 8),
-              _buildAffinityBadge(widget.profile.secondaryNature, isPrimary: false),
+              _buildAffinityBadge(
+                widget.profile.secondaryNature,
+                isPrimary: false,
+              ),
             ],
           ),
         ],
@@ -475,8 +604,22 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.bold)),
-            Text('$current / $max', style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.bold)),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              '$current / $max',
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
         const SizedBox(height: 6),
@@ -497,8 +640,12 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isPrimary ? Colors.greenAccent.withOpacity(0.15) : Colors.amber.withOpacity(0.1),
-        border: Border.all(color: isPrimary ? Colors.greenAccent : Colors.amber),
+        color: isPrimary
+            ? Colors.greenAccent.withOpacity(0.15)
+            : Colors.amber.withOpacity(0.1),
+        border: Border.all(
+          color: isPrimary ? Colors.greenAccent : Colors.amber,
+        ),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -523,7 +670,7 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
       'SpeedSeal',
       'ChakraControl',
       'ChakraBuffer',
-      'Taijutsu'
+      'Taijutsu',
     ];
 
     final labels = {
@@ -555,10 +702,20 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
           child: ListTile(
             title: Row(
               children: [
-                Text(labels[key] ?? key, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                Text(
+                  labels[key] ?? key,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
                 const SizedBox(width: 8),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: tierColor.withOpacity(0.15),
                     border: Border.all(color: tierColor),
@@ -566,7 +723,11 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                   ),
                   child: Text(
                     tier,
-                    style: TextStyle(color: tierColor, fontWeight: FontWeight.bold, fontSize: 10),
+                    style: TextStyle(
+                      color: tierColor,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    ),
                   ),
                 ),
               ],
@@ -602,15 +763,18 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
         final maxLvl = widget.jutsuProgression.maxLevels[jutsu.id] ?? 5;
         final cost = widget.game.practice.practiceCost(jutsu);
 
-        final reductionSeals = (lvl - 1) * widget.jutsuProgression.handSealsReduction;
+        final reductionSeals =
+            (lvl - 1) * widget.jutsuProgression.handSealsReduction;
         final seals = max(1, jutsu.handSeals.length - reductionSeals);
-        final damageBoost = (lvl - 1) * widget.jutsuProgression.damageBoostPercent;
+        final damageBoost =
+            (lvl - 1) * widget.jutsuProgression.damageBoostPercent;
         final finalDamage = (jutsu.damage * (1.0 + damageBoost)).toInt();
 
         final expNeeded = widget.jutsuProgression.expToNextLevel;
         final expPct = (exp / expNeeded).clamp(0.0, 1.0);
 
-        final isAffinityNature = jutsu.chakraNature == widget.profile.naturalNature ||
+        final isAffinityNature =
+            jutsu.chakraNature == widget.profile.naturalNature ||
             jutsu.chakraNature == widget.profile.secondaryNature;
 
         return Card(
@@ -628,25 +792,40 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                       children: [
                         Text(
                           jutsu.displayName,
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'LV $lvl / $maxLvl',
-                          style: const TextStyle(color: Colors.greenAccent, fontSize: 12, fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            color: Colors.greenAccent,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ],
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
-                        color: isAffinityNature ? Colors.orangeAccent.withOpacity(0.15) : Colors.white12,
+                        color: isAffinityNature
+                            ? Colors.orangeAccent.withOpacity(0.15)
+                            : Colors.white12,
                         borderRadius: BorderRadius.circular(4),
                       ),
                       child: Text(
                         jutsu.chakraNature.toUpperCase(),
                         style: TextStyle(
-                          color: isAffinityNature ? Colors.orangeAccent : Colors.white60,
+                          color: isAffinityNature
+                              ? Colors.orangeAccent
+                              : Colors.white60,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
                         ),
@@ -661,9 +840,27 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Chakra Cost: $cost CP', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                          Text('Hand Signs: $seals', style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                          Text('Est. Damage: $finalDamage', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          Text(
+                            'Chakra Cost: $cost CP',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            'Hand Signs: $seals',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
+                          Text(
+                            'Est. Damage: $finalDamage',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 12,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -677,14 +874,18 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                           setState(() {});
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Cast ${jutsu.displayName} in overworld successfully!'),
+                              content: Text(
+                                'Cast ${jutsu.displayName} in overworld successfully!',
+                              ),
                               duration: const Duration(seconds: 1),
                             ),
                           );
                         } else {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(widget.game.demoState.value.practiceLog),
+                              content: Text(
+                                widget.game.demoState.value.practiceLog,
+                              ),
                               backgroundColor: Colors.redAccent,
                               duration: const Duration(seconds: 1),
                             ),
@@ -693,11 +894,22 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                       },
                       style: FilledButton.styleFrom(
                         backgroundColor: const Color(0xFF2F6F4E),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
                         minimumSize: Size.zero,
                       ),
-                      child: const Text('Cast Overworld', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Cast Overworld',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -719,7 +931,11 @@ class _PlayerMenuDialogState extends State<_PlayerMenuDialog> {
                     const SizedBox(width: 8),
                     Text(
                       '$exp / $expNeeded EXP',
-                      style: const TextStyle(color: Colors.white38, fontSize: 10, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),

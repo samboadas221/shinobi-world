@@ -1,0 +1,15 @@
+jutsu_affinities:
+  # Affinity multipliers applied to jutsu damage and chakra cost
+  primary_multiplier: 1.25           # Same element as primary nature
+  secondary_multiplier: 1.10         # Same element as secondary nature
+  neutral_multiplier: 1.00           # Unrelated element
+  opposite_primary_multiplier: 0.75  # Opposite of primary nature
+  opposite_secondary_multiplier: 0.90 # Opposite of secondary nature
+
+  # Elemental opposites (bidirectional). 'none' means no opposite.
+  opposites:
+    fire: water
+    water: fire
+    wind: earth
+    earth: wind
+    lightning: none

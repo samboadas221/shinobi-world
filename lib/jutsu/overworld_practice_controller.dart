@@ -47,14 +47,19 @@ class OverworldPracticeController {
   int getJutsuLevel(String jutsuId) => _jutsuLevels[jutsuId] ?? 1;
   int getJutsuExp(String jutsuId) => _jutsuExp[jutsuId] ?? 0;
 
-  String? practiceJutsu(String jutsuId, {required int seed, required ShinobiDatabase database}) {
+  String? practiceJutsu(
+    String jutsuId, {
+    required int seed,
+    required ShinobiDatabase database,
+  }) {
     final selected = jutsu.firstWhere((item) => item.id == jutsuId);
     final cost = practiceCost(selected);
 
     // Buffer check: player cannot execute if cost > player buffer
     final buffer = profile.stats.calculate('ChakraBuffer', statsScaling);
     if (cost > buffer) {
-      practiceLog = 'Cast failed: chakra cost ($cost) exceeds Chakra Buffer ($buffer)';
+      practiceLog =
+          'Cast failed: chakra cost ($cost) exceeds Chakra Buffer ($buffer)';
       return null;
     }
 
@@ -86,7 +91,8 @@ class OverworldPracticeController {
         );
       } else {
         _jutsuExp[selected.id] = newExp;
-        practiceLog = '${selected.displayName} practiced (+${jutsuProgression.expPerUse} EXP)';
+        practiceLog =
+            '${selected.displayName} practiced (+${jutsuProgression.expPerUse} EXP)';
         database.savePlayerJutsu(
           seed: seed,
           jutsuId: selected.id,
@@ -98,7 +104,11 @@ class OverworldPracticeController {
     return selected.displayName;
   }
 
-  void awardJutsuBattleExp(String jutsuId, {required int seed, required ShinobiDatabase database}) {
+  void awardJutsuBattleExp(
+    String jutsuId, {
+    required int seed,
+    required ShinobiDatabase database,
+  }) {
     final selectedList = jutsu.where((item) => item.id == jutsuId);
     if (selectedList.isEmpty) return;
     final selected = selectedList.first;

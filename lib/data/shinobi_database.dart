@@ -116,12 +116,9 @@ class ShinobiDatabase extends GeneratedDatabase {
     required int level,
     required int exp,
   }) {
-    return FirstDemoStore(this).savePlayerJutsu(
-      seed: seed,
-      jutsuId: jutsuId,
-      level: level,
-      exp: exp,
-    );
+    return FirstDemoStore(
+      this,
+    ).savePlayerJutsu(seed: seed, jutsuId: jutsuId, level: level, exp: exp);
   }
 
   Future<List<Map<String, dynamic>>> loadPlayerJutsus(int seed) {
@@ -130,6 +127,41 @@ class ShinobiDatabase extends GeneratedDatabase {
 
   Future<PlayerProfile?> loadPlayerProfile(int seed) {
     return FirstDemoStore(this).loadPlayerProfile(seed);
+  }
+
+  /// Loads up to [limit] active ninjas belonging to [villageId] for a given
+  /// run [seed]. Returns raw row maps with keys: id, name, role, village_id,
+  /// alignment, bingo_listed, stats.
+  Future<List<Map<String, dynamic>>> loadNinjasForVillage(
+    int seed,
+    String villageId, {
+    int limit = 200,
+  }) {
+    return FirstDemoStore(
+      this,
+    ).loadNinjasForVillage(seed, villageId, limit: limit);
+  }
+
+  /// Loads up to [limit] active ninjas NOT belonging to [excludeVillageId]
+  /// for a given run [seed]. Excludes hostile (alignment=bad) ninjas — use
+  /// [loadHostileNinjas] to get those with guaranteed slots.
+  Future<List<Map<String, dynamic>>> loadNinjasForOtherVillages(
+    int seed,
+    String excludeVillageId, {
+    int limit = 30,
+  }) {
+    return FirstDemoStore(
+      this,
+    ).loadNinjasForOtherVillages(seed, excludeVillageId, limit: limit);
+  }
+
+  /// Loads up to [limit] active rogue ninjas (alignment='bad') for a given
+  /// run [seed], randomly ordered so repeated calls sample different rogues.
+  Future<List<Map<String, dynamic>>> loadHostileNinjas(
+    int seed, {
+    int limit = 20,
+  }) {
+    return FirstDemoStore(this).loadHostileNinjas(seed, limit: limit);
   }
 }
 

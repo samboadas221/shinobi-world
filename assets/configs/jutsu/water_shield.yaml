@@ -1,0 +1,16 @@
+jutsu:
+  id: water_shield
+  display_name: "Water Shield"
+  chakra_nature: water
+  damage: 0
+  chakra_cost: 20
+  hand_seals: [snake, ram, boar, ox]
+  cast_time_seconds: 1.5
+  speed: 0
+  hand_seal_speed: 13
+  chakra_control: 30
+  exp_gain: 6
+  effects:
+    - type: heal_hp
+      value: 18
+      duration_turns: 0

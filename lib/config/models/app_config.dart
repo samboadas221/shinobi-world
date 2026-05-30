@@ -15,8 +15,12 @@ class AppConfig {
     return AppConfig(
       brand: BrandConfig.fromYaml(yaml['brand'] as YamlMap),
       menu: MainMenuConfig.fromYaml(yaml['menu'] as YamlMap),
-      mainMenuStyle: MenuStyleConfig.fromYaml(yaml['main_menu_style'] as YamlMap),
-      characterMenuStyle: MenuStyleConfig.fromYaml(yaml['character_menu_style'] as YamlMap),
+      mainMenuStyle: MenuStyleConfig.fromYaml(
+        yaml['main_menu_style'] as YamlMap,
+      ),
+      characterMenuStyle: MenuStyleConfig.fromYaml(
+        yaml['character_menu_style'] as YamlMap,
+      ),
     );
   }
 

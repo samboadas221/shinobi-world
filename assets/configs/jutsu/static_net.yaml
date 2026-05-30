@@ -1,1 +1,16 @@
-jutsu: { id: static_net, display_name: Static Net, chakra_nature: lightning, damage: 15, chakra_cost: 15, hand_seals: [snake, rat, dog], cast_time_seconds: 1.0 }
+jutsu:
+  id: static_net
+  display_name: "Static Net"
+  chakra_nature: lightning
+  damage: 16
+  chakra_cost: 18
+  hand_seals: [horse, ram, ox]
+  cast_time_seconds: 1.1
+  speed: 20
+  hand_seal_speed: 10
+  chakra_control: 24
+  exp_gain: 5
+  effects:
+    - type: enemy_speed_debuff
+      value: -10
+      duration_turns: 2

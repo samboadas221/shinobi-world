@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../config/models/player_config.dart';
+import '../world/collision/aabb_rect.dart';
+import 'collision_registry.dart';
 import 'shinobi_world_game.dart';
 
 class PlayerComponent extends PositionComponent
@@ -15,10 +17,13 @@ class PlayerComponent extends PositionComponent
   PlayerComponent({
     required PlayerConfig config,
     required Vector2 spawnPosition,
+    required CollisionRegistry collisionRegistry,
   }) : _config = config,
+       _collisionRegistry = collisionRegistry,
        super(position: spawnPosition, size: config.size, anchor: Anchor.center);
 
   final PlayerConfig _config;
+  final CollisionRegistry _collisionRegistry;
   final _pressedKeys = <LogicalKeyboardKey>{};
   late final Paint _bodyPaint = Paint()..color = _config.visual.bodyColor;
   late final Paint _headbandPaint = Paint()
@@ -57,7 +62,8 @@ class PlayerComponent extends PositionComponent
       return;
     }
 
-    final isShiftPressed = _pressedKeys.contains(LogicalKeyboardKey.shiftLeft) ||
+    final isShiftPressed =
+        _pressedKeys.contains(LogicalKeyboardKey.shiftLeft) ||
         _pressedKeys.contains(LogicalKeyboardKey.shiftRight);
     final hasChakra = game.practice.currentChakra > 0;
     final isRunning = isShiftPressed && hasChakra;
@@ -69,13 +75,54 @@ class PlayerComponent extends PositionComponent
       if (_chakraDrainAccumulator >= 1.0) {
         final drain = _chakraDrainAccumulator.floor();
         _chakraDrainAccumulator -= drain;
-        game.practice.currentChakra = max(0, game.practice.currentChakra - drain);
+        game.practice.currentChakra = max(
+          0,
+          game.practice.currentChakra - drain,
+        );
       }
     } else {
       _chakraDrainAccumulator = 0.0;
     }
 
     position += direction.normalized() * speed * dt;
+
+    // ── Structure collision ────────────────────────────────────────────────
+    // Test the player's new AABB. If it overlaps a building, revert position.
+    final halfW = size.x / 2;
+    final halfH = size.y / 2;
+    final moverRect = AabbRect(
+      left: position.x - halfW,
+      top: position.y - halfH,
+      right: position.x + halfW,
+      bottom: position.y + halfH,
+    );
+
+    if (_collisionRegistry.collides(moverRect)) {
+      // Try axis-separated sliding so the player can still move along walls.
+      final xOnlyPos = Vector2(_previousPosition.x, position.y);
+      final yOnlyPos = Vector2(position.x, _previousPosition.y);
+
+      final xAabb = AabbRect(
+        left: xOnlyPos.x - halfW,
+        top: xOnlyPos.y - halfH,
+        right: xOnlyPos.x + halfW,
+        bottom: xOnlyPos.y + halfH,
+      );
+      final yAabb = AabbRect(
+        left: yOnlyPos.x - halfW,
+        top: yOnlyPos.y - halfH,
+        right: yOnlyPos.x + halfW,
+        bottom: yOnlyPos.y + halfH,
+      );
+
+      if (!_collisionRegistry.collides(xAabb)) {
+        position.setFrom(xOnlyPos);
+      } else if (!_collisionRegistry.collides(yAabb)) {
+        position.setFrom(yOnlyPos);
+      } else {
+        position.setFrom(_previousPosition);
+      }
+    }
   }
 
   @override
@@ -106,7 +153,7 @@ class PlayerComponent extends PositionComponent
       direction.y += 1;
     }
 
-    // Include joystick movement if keyboard is not active
+    // Include joystick movement if keyboard is not active.
     if (direction.isZero() &&
         game.joystick != null &&
         game.joystick!.direction != JoystickDirection.idle) {

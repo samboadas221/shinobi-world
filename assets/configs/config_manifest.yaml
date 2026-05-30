@@ -4,6 +4,7 @@ configs:
   character_clothing: configs/character/clothing.yaml
   character_stats_scaling: configs/character/stats_scaling.yaml
   jutsu_progression: configs/jutsu/jutsu_progression.yaml
+  jutsu_affinities: configs/jutsu/jutsu_affinities.yaml
   world_time: configs/world/time.yaml
   world_map: configs/world/map.yaml
   world_run_generation: configs/world/run_generation.yaml
@@ -18,14 +19,19 @@ configs:
   jutsu:
     - configs/jutsu/fireball.yaml
     - configs/jutsu/ember_shuriken.yaml
+    - configs/jutsu/fire_wall.yaml
     - configs/jutsu/water_bullet.yaml
     - configs/jutsu/mist_step.yaml
+    - configs/jutsu/water_shield.yaml
     - configs/jutsu/wind_slash.yaml
     - configs/jutsu/gale_push.yaml
+    - configs/jutsu/cyclone_armor.yaml
     - configs/jutsu/earth_spike.yaml
     - configs/jutsu/stone_skin.yaml
+    - configs/jutsu/mud_wall.yaml
     - configs/jutsu/lightning_spark.yaml
     - configs/jutsu/static_net.yaml
+    - configs/jutsu/thunder_clap.yaml
   enemies: []
   summons:
     - configs/summons/frogs.yaml

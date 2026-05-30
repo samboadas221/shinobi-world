@@ -7,6 +7,7 @@ import 'models/clothing_config.dart';
 import 'models/combat_config.dart';
 import 'models/enemy_config.dart';
 import 'models/jutsu_config.dart';
+import 'models/jutsu_affinity_config.dart';
 import 'models/player_config.dart';
 import 'models/progression_config.dart';
 import 'models/summon_config.dart';
@@ -83,6 +84,9 @@ class GameConfigLoader {
       ),
       jutsuProgression: JutsuProgressionConfig.fromYaml(
         await _loadManifestMap(configs, 'jutsu_progression'),
+      ),
+      jutsuAffinities: JutsuAffinityConfig.fromYaml(
+        await _loadManifestMap(configs, 'jutsu_affinities'),
       ),
     );
   }

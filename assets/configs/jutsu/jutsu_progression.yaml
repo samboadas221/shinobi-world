@@ -8,11 +8,16 @@ jutsu_progression:
   max_levels:
     fireball: 5
     ember_shuriken: 3
+    fire_wall: 3
     water_bullet: 4
     mist_step: 3
+    water_shield: 3
     wind_slash: 5
     gale_push: 4
+    cyclone_armor: 3
     earth_spike: 4
     stone_skin: 3
+    mud_wall: 3
     lightning_spark: 5
     static_net: 4
+    thunder_clap: 4

@@ -1,5 +1,4 @@
 import 'package:yaml/yaml.dart';
-import 'yaml_readers.dart';
 
 class StatsScalingConfig {
   const StatsScalingConfig({

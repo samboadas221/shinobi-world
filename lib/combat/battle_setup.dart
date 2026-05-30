@@ -6,12 +6,6 @@ class BattleSetup {
 
   final BattleRequest request;
 
-  List<BattleParticipant> participantsByTurnOrder() {
-    final participants = [player(), enemy()];
-    participants.sort((a, b) => b.speed.compareTo(a.speed));
-    return participants;
-  }
-
   BattleParticipant player() {
     return BattleParticipant(
       name: request.playerName,
@@ -19,9 +13,9 @@ class BattleSetup {
       currentHealth: request.playerCurrentHealth,
       maxChakra: request.player.maxChakra,
       currentChakra: request.playerCurrentChakra,
-      speed: request.player.stats.speed,
-      attack: request.player.stats.attack,
-      defense: request.player.stats.defense,
+      baseSpeed: request.player.stats.speed,
+      baseAttack: request.player.stats.attack,
+      baseDefense: request.player.stats.defense,
       jutsu: request.playerJutsu,
     );
   }
@@ -29,13 +23,13 @@ class BattleSetup {
   BattleParticipant enemy() {
     return BattleParticipant(
       name: request.enemy.displayName,
-      maxHealth: request.enemy.stats['health']!,
+      maxHealth: request.enemyCurrentHealth,
       currentHealth: request.enemyCurrentHealth,
-      maxChakra: request.enemy.stats['chakra']!,
+      maxChakra: request.enemyCurrentChakra,
       currentChakra: request.enemyCurrentChakra,
-      speed: request.enemy.stats['speed']!,
-      attack: request.enemy.stats['attack']!,
-      defense: request.enemy.stats['defense']!,
+      baseSpeed: request.enemy.stats['speed'] ?? 10,
+      baseAttack: request.enemy.stats['attack'] ?? 10,
+      baseDefense: request.enemy.stats['defense'] ?? 5,
       jutsu: request.enemyJutsu,
     );
   }

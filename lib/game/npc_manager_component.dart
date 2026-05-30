@@ -1,11 +1,12 @@
-import 'dart:math';
 import 'package:flame/components.dart';
+
 import '../config/models/enemy_config.dart';
-import '../jutsu/jutsu_loadout_selector.dart';
-import 'enemy_component.dart';
-import 'procedural_world_map.dart';
 import 'shinobi_world_game.dart';
 
+/// Deprecated. Replaced by NinjaSpawnerComponent.
+///
+/// Kept to avoid breaking any existing references in save-game logic or tests.
+/// All enemy spawning on the overworld is now managed by NinjaSpawnerComponent.
 class NpcManagerComponent extends Component
     with HasGameReference<ShinobiWorldGame> {
   NpcManagerComponent({required this.configs});
@@ -14,12 +15,11 @@ class NpcManagerComponent extends Component
 
   @override
   void onLoad() {
-    // Deprecated overworld enemy spawning.
-    // Overworld stays empty, while all generated village ninjas are registered in SQLite.
+    // No-op. Use NinjaSpawnerComponent for active NPC management.
   }
 
   @override
   void update(double dt) {
-    // Deprecated overworld enemy spawning updates.
+    // No-op.
   }
 }

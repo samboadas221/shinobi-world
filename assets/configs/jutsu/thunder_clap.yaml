@@ -1,0 +1,12 @@
+jutsu:
+  id: thunder_clap
+  display_name: "Thunder Clap"
+  chakra_nature: lightning
+  damage: 40
+  chakra_cost: 28
+  hand_seals: [tiger, horse, snake, bird]
+  cast_time_seconds: 1.5
+  speed: 20
+  hand_seal_speed: 12
+  chakra_control: 30
+  exp_gain: 7

@@ -317,3 +317,82 @@ The current codebase already includes:
 - overworld jutsu practice
 - collision-triggered turn-based combat
 - tests for config, world generation, combat, and initial widget loading
+
+## 2026-05-26 — Jutsu System, Collision, NPC Spawning & Combat Screen Overhaul
+
+### Completed Work
+
+**Jutsu System:**
+- Created `jutsu_affinities.yaml` — global affinity multipliers (primary 1.25×, secondary 1.10×, neutral 1.00×, opposite-primary 0.75×, opposite-secondary 0.90×) and bidirectional opposite-element map.
+- Updated all 10 existing jutsu YAML files to new schema; added 5 new jutsus: `fire_wall`, `water_shield`, `cyclone_armor`, `mud_wall`, `thunder_clap`. Total: 15 jutsus (3 per element).
+- Extended `JutsuConfig` with `speed`, `handSealSpeed`, `chakraControl`, `expGain`, `nextLevelId?`, `nextLevelExpRequired?`, `effects: List<JutsuEffect>`.
+- Added `JutsuEffect` / `JutsuEffectType` (armorBuff, speedBuff, healHp, healChakra, enemyArmorDebuff, enemySpeedDebuff).
+- Created `JutsuAffinityConfig` with `multiplierFor()` logic.
+- Updated `DamageResolver.jutsuDamage()` to apply affinity multipliers.
+- Updated `BattleParticipant` with `ActiveEffect` tracking, `tickEffects()`, `applyEffect()`, and stat revert on expiry.
+- Updated `BattleController` to wire affinity damage, apply effects, and tick effects on enemy turn.
+- Wrote `assets/docs/jutsu_documentation.md` — full YAML schema reference, how to add jutsus/effects, level-up chain guide, Dart extension guide.
+
+**Collision System:**
+- Created `AabbRect` — pure-Dart zero-dependency AABB with overlap test.
+- Created `OverworldCollisionGrid` — spatial hash grid, O(1) per-frame collision queries.
+- Created `CollisionRegistry` — populates grid from `WorldLayoutData.buildings` at load time.
+- Updated `PlayerComponent.update()` — AABB test after movement; axis-separated sliding so player glides along walls.
+- Added `collision` section to `map.yaml`; added `CollisionMapConfig` to `WorldMapConfig`.
+
+**NPC Spawning:**
+- Added `npc_spawn` section to `map.yaml` with full config (village size ranges, ratios, spawn/despawn radii, wander speed).
+- Added `NpcSpawnConfig` to `WorldMapConfig`.
+- Created `ActiveNinjaComponent` — Flame component that wanders within its radius, color-coded by alignment.
+- Added `loadNinjasForVillage` and `loadNinjasForOtherVillages` to `FirstDemoStore` and `ShinobiDatabase`.
+- Created `NinjaSpawnerComponent` — builds a passive pool from DB on load, spawns into the buffer zone around the player, despawns far NPCs back to the pool, tracks killed IDs permanently.
+
+**Combat Screen Overhaul:**
+- Rewrote `combat_screen.dart` — dark RPG full-screen layout with VS header, animated turn indicator, participant panels, log, and action bar.
+- Rewrote `combat_participant_panel.dart` — animated HP/chakra bars, effect badges with countdown, mini stats (SPD/ATK/DEF).
+- Rewrote `combat_action_bar.dart` — styled Attack/Jutsu/Flee buttons; Jutsu button slides up the `JutsuSelectionPanel`.
+- Rewrote `combat_log.dart` — dark monospaced log with oldest-entry fade-out.
+- Created `jutsu_selection_panel.dart` — grid of element-colored jutsu cards with badge, cost, damage, and disabled fading.
+
+**Wiring:**
+- `shinobi_world_game.dart` updated: creates `CollisionRegistry`, passes it to `PlayerComponent`, replaces `NpcManagerComponent` with `NinjaSpawnerComponent`, adds `jutsuAffinities` to `BattleRequest`.
+
+### Validation
+
+- `flutter analyze`: Passed with 0 errors.
+- `flutter test`: Passed (all 3 tests).
+- Manual build: Verified release build works correctly.
+
+## 2026-05-26 — NPC Spawning, Alignment Color Mapping & Combat Collision Triggers
+
+### Completed Work
+
+- **NPC Spawning Bug Fix**: Modified `lib/world/world_run_generator.dart` to generate simple/rogue ninjas with `active: true` (instead of `false`), saving them as `active = 1` in SQLite. Added automatic DB migration in `lib/data/first_demo_store.dart` (`prepareTables()`) to update any preexisting inactive ninjas to `active = 1` so existing characters can immediately spawn NPCs.
+- **Overworld Alignment Mapping**: Added database alignment mapping to correct overworld categories in `lib/game/ninja_spawner_component.dart`: `'bad'` -> `'hostile'` (**red**), `'village'` from starting village -> `'friendly'` (**blue**), and foreign village -> `'neutral'` (**grey**).
+- **Combat Collision Integration**: Wired collision detection with `ActiveNinjaComponent` in `lib/game/shinobi_world_game.dart`. Colliding with a red rogue ninja now dynamically builds an `EnemyConfig` from their database level and stats (health, chakra, speed, attack, defense calculated dynamically via `config.statsScaling`) and name. Chooses 2 to 4 random jutsus from the global loaded pool, starts full elemental combat, and permanently marks them as deceased in the overworld spawner (`spawner.markKilled`) upon victory.
+
+### Validation
+
+- `flutter format lib test`: Executed.
+- `flutter analyze`: Completed with 0 errors.
+- `flutter test`: 3/3 tests passed.
+- `flutter build windows`: Success! Release binary built at `build\windows\x64\runner\Release\shinobi_world.exe`.
+
+## 2026-05-26 — Encounter Collision Fix & Debug Force Encounter Button
+
+### Issues
+- `ActiveNinjaComponent` had no effective collision trigger — encounter detector was using `collision_padding: 2.0`, making pixel-perfect alignment required to trigger combat. Player and ninja dots are 12×14 and 10×10 respectively; in practice, you could never walk "into" them reliably.
+- The encounter filter required `alignment == 'hostile'`, but with `home_village_ratio: 0.90`, nearly all spawned ninjas were blue/friendly, and rogue ninjas were rare, so combat was nearly untestable.
+
+### Completed Work
+
+- **Encounter collision padding**: Increased `collision_padding` from `2.0` to `16.0` in `assets/configs/world/map.yaml` (one tile). Walking within 16px of any ninja now triggers an encounter.
+- **Encounter trigger broadened**: Removed the `alignment == 'hostile'` filter from `_updateEncounter` in `shinobi_world_game.dart`. Any `ActiveNinjaComponent` within collision distance now triggers combat. Alignment still controls future reward/tone logic.
+- **Debug Force Encounter button**: Added `debugForceEncounter()` method to `ShinobiWorldGame`. Finds the nearest live `ActiveNinjaComponent`, constructs a full dynamic `EnemyConfig` from their stats, selects 2–4 random jutsus, and immediately launches the combat screen. Wired to a red **"Force Encounter (Debug)"** button in the debug panel (`lib/ui/demo_hud.dart`).
+
+### Validation
+
+- `flutter analyze`: 0 errors.
+- `flutter build windows`: Success! Release binary at `build\windows\x64\runner\Release\shinobi_world.exe`.
+
+

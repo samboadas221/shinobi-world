@@ -1,0 +1,16 @@
+jutsu:
+  id: mud_wall
+  display_name: "Mud Wall"
+  chakra_nature: earth
+  damage: 14
+  chakra_cost: 26
+  hand_seals: [ram, dog, tiger, ox, snake]
+  cast_time_seconds: 1.8
+  speed: 10
+  hand_seal_speed: 14
+  chakra_control: 35
+  exp_gain: 7
+  effects:
+    - type: armor_buff
+      value: 12
+      duration_turns: 4

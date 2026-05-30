@@ -122,6 +122,10 @@ class FirstDemoStore {
     );
     await _tryAddNinjaStatsColumn();
     await _tryAddVillageLocationColumns();
+    // Migration: ensure any pre-existing generated inactive ninjas are activated for play
+    await _database.customStatement(
+      'UPDATE first_demo_ninjas SET active = 1 WHERE active = 0',
+    );
   }
 
   Future<void> _deleteRun(int seed) async {
@@ -233,14 +237,20 @@ class FirstDemoStore {
 
   Future<List<Map<String, dynamic>>> loadPlayerJutsus(int seed) async {
     try {
-      final rows = await _database.customSelect(
-        'SELECT jutsu_id, level, exp FROM first_demo_player_jutsus WHERE run_seed = $seed',
-      ).get();
-      return rows.map((row) => {
-        'jutsu_id': row.read<String>('jutsu_id'),
-        'level': row.read<int>('level'),
-        'exp': row.read<int>('exp'),
-      }).toList();
+      final rows = await _database
+          .customSelect(
+            'SELECT jutsu_id, level, exp FROM first_demo_player_jutsus WHERE run_seed = $seed',
+          )
+          .get();
+      return rows
+          .map(
+            (row) => {
+              'jutsu_id': row.read<String>('jutsu_id'),
+              'level': row.read<int>('level'),
+              'exp': row.read<int>('exp'),
+            },
+          )
+          .toList();
     } catch (_) {
       return [];
     }
@@ -248,20 +258,26 @@ class FirstDemoStore {
 
   Future<PlayerProfile?> loadPlayerProfile(int seed) async {
     try {
-      final rows = await _database.customSelect(
-        'SELECT * FROM first_demo_player_profiles WHERE run_seed = $seed',
-      ).get();
+      final rows = await _database
+          .customSelect(
+            'SELECT * FROM first_demo_player_profiles WHERE run_seed = $seed',
+          )
+          .get();
       if (rows.isEmpty) return null;
       final row = rows.first;
 
-      final spentPointsJson = jsonDecode(row.read<String>('spent_points')) as Map<String, dynamic>;
+      final spentPointsJson =
+          jsonDecode(row.read<String>('spent_points')) as Map<String, dynamic>;
       final spentPoints = spentPointsJson.map((k, v) => MapEntry(k, v as int));
 
-      final clothingJson = jsonDecode(row.read<String>('clothing')) as Map<String, dynamic>;
+      final clothingJson =
+          jsonDecode(row.read<String>('clothing')) as Map<String, dynamic>;
       final clothing = clothingJson.map((k, v) => MapEntry(k, v as String));
 
       final statsLevel = row.read<int?>('stats_level') ?? 1;
-      final statsTiersJson = jsonDecode(row.read<String?>('stats_tiers') ?? '{}') as Map<String, dynamic>;
+      final statsTiersJson =
+          jsonDecode(row.read<String?>('stats_tiers') ?? '{}')
+              as Map<String, dynamic>;
       final statsTiers = statsTiersJson.map((k, v) => MapEntry(k, v as String));
 
       return PlayerProfile(
@@ -269,7 +285,9 @@ class FirstDemoStore {
         gender: row.read<String>('gender'),
         naturalNature: row.read<String>('natural_nature'),
         secondaryNature: row.read<String>('secondary_nature'),
-        secondaryChakraCostMultiplier: row.read<double>('secondary_cost_multiplier'),
+        secondaryChakraCostMultiplier: row.read<double>(
+          'secondary_cost_multiplier',
+        ),
         stats: NinjaStats(
           level: statsLevel,
           scalingTiers: statsTiers,
@@ -321,6 +339,106 @@ class FirstDemoStore {
       );
     } catch (_) {
       // Columns might already exist
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> loadNinjasForVillage(
+    int seed,
+    String villageId, {
+    int limit = 200,
+  }) async {
+    try {
+      final rows = await _database
+          .customSelect(
+            'SELECT id, name, role, village_id, alignment, bingo_listed, stats '
+            'FROM first_demo_ninjas '
+            'WHERE run_seed = $seed AND village_id = ? AND active = 1 '
+            'LIMIT $limit',
+            variables: [Variable.withString(villageId)],
+          )
+          .get();
+      return rows
+          .map(
+            (r) => {
+              'id': r.read<String>('id'),
+              'name': r.read<String>('name'),
+              'role': r.read<String>('role'),
+              'village_id': r.read<String>('village_id'),
+              'alignment': r.read<String>('alignment'),
+              'bingo_listed': r.read<int>('bingo_listed') == 1,
+              'stats': r.read<String>('stats'),
+            },
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> loadNinjasForOtherVillages(
+    int seed,
+    String excludeVillageId, {
+    int limit = 30,
+  }) async {
+    try {
+      final rows = await _database
+          .customSelect(
+            'SELECT id, name, role, village_id, alignment, bingo_listed, stats '
+            'FROM first_demo_ninjas '
+            'WHERE run_seed = $seed AND village_id != ? AND active = 1 '
+            'AND alignment != \'bad\' '
+            'ORDER BY RANDOM() LIMIT $limit',
+            variables: [Variable.withString(excludeVillageId)],
+          )
+          .get();
+      return rows
+          .map(
+            (r) => {
+              'id': r.read<String>('id'),
+              'name': r.read<String>('name'),
+              'role': r.read<String>('role'),
+              'village_id': r.read<String>('village_id'),
+              'alignment': r.read<String>('alignment'),
+              'bingo_listed': r.read<int>('bingo_listed') == 1,
+              'stats': r.read<String>('stats'),
+            },
+          )
+          .toList();
+    } catch (_) {
+      return [];
+    }
+  }
+
+  /// Loads up to [limit] active rogue ninjas (alignment='bad') for a given run
+  /// [seed], ordered randomly so repeated calls give different results.
+  Future<List<Map<String, dynamic>>> loadHostileNinjas(
+    int seed, {
+    int limit = 20,
+  }) async {
+    try {
+      final rows = await _database
+          .customSelect(
+            'SELECT id, name, role, village_id, alignment, bingo_listed, stats '
+            'FROM first_demo_ninjas '
+            'WHERE run_seed = $seed AND alignment = \'bad\' AND active = 1 '
+            'ORDER BY RANDOM() LIMIT $limit',
+          )
+          .get();
+      return rows
+          .map(
+            (r) => {
+              'id': r.read<String>('id'),
+              'name': r.read<String>('name'),
+              'role': r.read<String>('role'),
+              'village_id': r.read<String>('village_id'),
+              'alignment': r.read<String>('alignment'),
+              'bingo_listed': r.read<int>('bingo_listed') == 1,
+              'stats': r.read<String>('stats'),
+            },
+          )
+          .toList();
+    } catch (_) {
+      return [];
     }
   }
 }

@@ -23,7 +23,8 @@ class PlayerProfile {
 
   int get totalPoints => (stats.level - 1) * 20;
 
-  int get spentPointsSum => stats.spentPoints.values.fold(0, (sum, val) => sum + val);
+  int get spentPointsSum =>
+      stats.spentPoints.values.fold(0, (sum, val) => sum + val);
 
   int get unspentPoints => totalPoints - spentPointsSum;
 
@@ -42,7 +43,8 @@ class PlayerProfile {
       gender: gender ?? this.gender,
       naturalNature: naturalNature ?? this.naturalNature,
       secondaryNature: secondaryNature ?? this.secondaryNature,
-      secondaryChakraCostMultiplier: secondaryChakraCostMultiplier ?? this.secondaryChakraCostMultiplier,
+      secondaryChakraCostMultiplier:
+          secondaryChakraCostMultiplier ?? this.secondaryChakraCostMultiplier,
       stats: stats ?? this.stats,
       clothing: clothing ?? this.clothing,
       clothingColorLabel: clothingColorLabel ?? this.clothingColorLabel,

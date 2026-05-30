@@ -26,7 +26,7 @@ class NinjaStats {
       'SpeedSeal',
       'ChakraControl',
       'ChakraBuffer',
-      'Taijutsu'
+      'Taijutsu',
     ];
 
     final scalingTiers = <String, String>{};
@@ -66,7 +66,7 @@ class NinjaStats {
       'SpeedSeal',
       'ChakraControl',
       'ChakraBuffer',
-      'Taijutsu'
+      'Taijutsu',
     ];
 
     final newSpent = Map<String, int>.from(spentPoints);

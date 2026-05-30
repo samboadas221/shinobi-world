@@ -1,0 +1,16 @@
+jutsu:
+  id: cyclone_armor
+  display_name: "Cyclone Armor"
+  chakra_nature: wind
+  damage: 0
+  chakra_cost: 18
+  hand_seals: [horse, bird, snake, ram]
+  cast_time_seconds: 1.3
+  speed: 0
+  hand_seal_speed: 11
+  chakra_control: 28
+  exp_gain: 6
+  effects:
+    - type: speed_buff
+      value: 15
+      duration_turns: 3

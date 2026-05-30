@@ -8,10 +8,7 @@ import 'yaml_readers.dart';
 // ── WorldConfig ───────────────────────────────────────────────────────────────
 
 class WorldConfig {
-  const WorldConfig({
-    required this.time,
-    required this.map,
-  });
+  const WorldConfig({required this.time, required this.map});
 
   final WorldTimeConfig time;
   final WorldMapConfig map;
@@ -53,6 +50,8 @@ class WorldMapConfig {
     required this.visuals,
     required this.layout,
     required this.encounters,
+    required this.collision,
+    required this.npcSpawn,
   });
 
   factory WorldMapConfig.fromYaml(YamlMap yaml) {
@@ -65,6 +64,8 @@ class WorldMapConfig {
       visuals: WorldMapVisualConfig.fromYaml(map['visuals'] as YamlMap),
       layout: WorldMapLayoutConfig.fromYaml(map['layout'] as YamlMap),
       encounters: EncounterConfig.fromYaml(map['gameplay'] as YamlMap),
+      collision: CollisionMapConfig.fromYaml(map['collision'] as YamlMap),
+      npcSpawn: NpcSpawnConfig.fromYaml(map['npc_spawn'] as YamlMap),
     );
   }
 
@@ -77,6 +78,8 @@ class WorldMapConfig {
   final WorldMapVisualConfig visuals;
   final WorldMapLayoutConfig layout;
   final EncounterConfig encounters;
+  final CollisionMapConfig collision;
+  final NpcSpawnConfig npcSpawn;
 }
 
 // ── MapSizeRangeConfig ────────────────────────────────────────────────────────
@@ -85,9 +88,9 @@ class MapSizeRangeConfig {
   const MapSizeRangeConfig({required this.width, required this.height});
 
   factory MapSizeRangeConfig.fromYaml(YamlMap yaml) => MapSizeRangeConfig(
-        width: IntRangeConfig.fromYaml(yaml['width'] as YamlMap),
-        height: IntRangeConfig.fromYaml(yaml['height'] as YamlMap),
-      );
+    width: IntRangeConfig.fromYaml(yaml['width'] as YamlMap),
+    height: IntRangeConfig.fromYaml(yaml['height'] as YamlMap),
+  );
 
   final IntRangeConfig width;
   final IntRangeConfig height;
@@ -169,9 +172,7 @@ class WorldMapLayoutConfig {
       residentialZoneRatio: readDouble(yaml, 'residential_zone_ratio'),
       stoneHighwayThreshold: readDouble(yaml, 'stone_highway_threshold'),
       interVillageRoadWidth: readDouble(yaml, 'inter_village_road_width'),
-      generator: VillageGeneratorConfig.fromYaml(
-        yaml['generator'] as YamlMap,
-      ),
+      generator: VillageGeneratorConfig.fromYaml(yaml['generator'] as YamlMap),
     );
   }
 
@@ -189,9 +190,9 @@ class IntRangeConfig {
   const IntRangeConfig({required this.min, required this.max});
 
   factory IntRangeConfig.fromYaml(YamlMap yaml) => IntRangeConfig(
-        min: (yaml['min'] as num).toInt(),
-        max: (yaml['max'] as num).toInt(),
-      );
+    min: (yaml['min'] as num).toInt(),
+    max: (yaml['max'] as num).toInt(),
+  );
 
   final int min;
   final int max;
@@ -206,9 +207,9 @@ class DoubleRangeConfig {
   const DoubleRangeConfig({required this.min, required this.max});
 
   factory DoubleRangeConfig.fromYaml(YamlMap yaml) => DoubleRangeConfig(
-        min: (yaml['min'] as num).toDouble(),
-        max: (yaml['max'] as num).toDouble(),
-      );
+    min: (yaml['min'] as num).toDouble(),
+    max: (yaml['max'] as num).toDouble(),
+  );
 
   final double min;
   final double max;
@@ -226,9 +227,9 @@ class TileSizeRangeConfig {
   const TileSizeRangeConfig({required this.width, required this.height});
 
   factory TileSizeRangeConfig.fromYaml(YamlMap yaml) => TileSizeRangeConfig(
-        width: IntRangeConfig.fromYaml(yaml['width'] as YamlMap),
-        height: IntRangeConfig.fromYaml(yaml['height'] as YamlMap),
-      );
+    width: IntRangeConfig.fromYaml(yaml['width'] as YamlMap),
+    height: IntRangeConfig.fromYaml(yaml['height'] as YamlMap),
+  );
 
   final IntRangeConfig width;
   final IntRangeConfig height;
@@ -247,10 +248,10 @@ class ZoneBuildingEntry {
   });
 
   factory ZoneBuildingEntry.fromYaml(YamlMap yaml) => ZoneBuildingEntry(
-        type: yaml['type'] as String,
-        count: (yaml['count'] as num?)?.toInt() ?? 1,
-        tiles: TileSizeRangeConfig.fromYaml(yaml['tiles'] as YamlMap),
-      );
+    type: yaml['type'] as String,
+    count: (yaml['count'] as num?)?.toInt() ?? 1,
+    tiles: TileSizeRangeConfig.fromYaml(yaml['tiles'] as YamlMap),
+  );
 
   final String type;
   final int count;
@@ -269,7 +270,10 @@ class ZoneConfig {
       return list.cast<YamlMap>().map(ZoneBuildingEntry.fromYaml).toList();
     }
 
-    return ZoneConfig(mandatory: parse('mandatory'), optional: parse('optional'));
+    return ZoneConfig(
+      mandatory: parse('mandatory'),
+      optional: parse('optional'),
+    );
   }
 
   final List<ZoneBuildingEntry> mandatory;
@@ -283,9 +287,9 @@ class ResidentialZoneConfig {
   });
 
   factory ResidentialZoneConfig.fromYaml(YamlMap yaml) => ResidentialZoneConfig(
-        houseTiles: TileSizeRangeConfig.fromYaml(yaml['house_tiles'] as YamlMap),
-        targetHouses: IntRangeConfig.fromYaml(yaml['target_houses'] as YamlMap),
-      );
+    houseTiles: TileSizeRangeConfig.fromYaml(yaml['house_tiles'] as YamlMap),
+    targetHouses: IntRangeConfig.fromYaml(yaml['target_houses'] as YamlMap),
+  );
 
   final TileSizeRangeConfig houseTiles;
 
@@ -312,16 +316,19 @@ class VillageGeneratorGlobalConfig {
   factory VillageGeneratorGlobalConfig.fromYaml(YamlMap yaml) {
     return VillageGeneratorGlobalConfig(
       numSpines: IntRangeConfig.fromYaml(yaml['num_spines'] as YamlMap),
-      spineLengthFraction:
-          DoubleRangeConfig.fromYaml(yaml['spine_length_fraction'] as YamlMap),
-      straightRunTiles:
-          IntRangeConfig.fromYaml(yaml['straight_run_tiles'] as YamlMap),
+      spineLengthFraction: DoubleRangeConfig.fromYaml(
+        yaml['spine_length_fraction'] as YamlMap,
+      ),
+      straightRunTiles: IntRangeConfig.fromYaml(
+        yaml['straight_run_tiles'] as YamlMap,
+      ),
       spineWidthTiles: (yaml['spine_width_tiles'] as num).toInt(),
       branchWidthTiles: (yaml['branch_width_tiles'] as num).toInt(),
       numBranchesBase: (yaml['num_branches_base'] as num).toInt(),
       numBranchesPerSize: (yaml['num_branches_per_size'] as num).toInt(),
-      branchLengthTiles:
-          IntRangeConfig.fromYaml(yaml['branch_length_tiles'] as YamlMap),
+      branchLengthTiles: IntRangeConfig.fromYaml(
+        yaml['branch_length_tiles'] as YamlMap,
+      ),
       minRoadSpacingTiles: (yaml['min_road_spacing_tiles'] as num).toInt(),
       exitRoadWidthTiles: (yaml['exit_road_width_tiles'] as num).toInt(),
     );
@@ -355,12 +362,13 @@ class VillageTierConfig {
     return VillageTierConfig(
       gridCols: IntRangeConfig.fromYaml(yaml['grid_cols'] as YamlMap),
       gridRows: IntRangeConfig.fromYaml(yaml['grid_rows'] as YamlMap),
-      gridExpandPerAttemptTiles:
-          (yaml['grid_expand_per_attempt_tiles'] as num).toInt(),
+      gridExpandPerAttemptTiles: (yaml['grid_expand_per_attempt_tiles'] as num)
+          .toInt(),
       militaryZone: ZoneConfig.fromYaml(yaml['military_zone'] as YamlMap),
       commercialZone: ZoneConfig.fromYaml(yaml['commercial_zone'] as YamlMap),
-      residentialZone:
-          ResidentialZoneConfig.fromYaml(yaml['residential_zone'] as YamlMap),
+      residentialZone: ResidentialZoneConfig.fromYaml(
+        yaml['residential_zone'] as YamlMap,
+      ),
     );
   }
 
@@ -392,9 +400,7 @@ class VillageGeneratorConfig {
     return VillageGeneratorConfig(
       smallMaxSize: (yaml['small_max_size'] as num).toInt(),
       mediumMaxSize: (yaml['medium_max_size'] as num).toInt(),
-      global: VillageGeneratorGlobalConfig.fromYaml(
-        yaml['global'] as YamlMap,
-      ),
+      global: VillageGeneratorGlobalConfig.fromYaml(yaml['global'] as YamlMap),
       small: VillageTierConfig.fromYaml(yaml['small'] as YamlMap),
       medium: VillageTierConfig.fromYaml(yaml['medium'] as YamlMap),
       large: VillageTierConfig.fromYaml(yaml['large'] as YamlMap),
@@ -412,5 +418,88 @@ class VillageGeneratorConfig {
     if (villageSize <= smallMaxSize) return small;
     if (villageSize <= mediumMaxSize) return medium;
     return large;
+  }
+}
+
+// ── CollisionMapConfig ────────────────────────────────────────────────────────
+
+class CollisionMapConfig {
+  const CollisionMapConfig({
+    required this.gridCellSizePx,
+    required this.structureMarginPx,
+  });
+
+  factory CollisionMapConfig.fromYaml(YamlMap yaml) {
+    return CollisionMapConfig(
+      gridCellSizePx: readDouble(yaml, 'grid_cell_size_px'),
+      structureMarginPx: readDouble(yaml, 'structure_margin_px'),
+    );
+  }
+
+  final double gridCellSizePx;
+  final double structureMarginPx;
+}
+
+// ── NpcSpawnConfig ────────────────────────────────────────────────────────────
+
+class NpcSpawnConfig {
+  const NpcSpawnConfig({
+    required this.smallVillageNinja,
+    required this.mediumVillageNinja,
+    required this.bigVillageNinja,
+    required this.homeVillageRatio,
+    required this.hostileRatio,
+    required this.spawnCheckIntervalSeconds,
+    required this.spawnBufferTiles,
+    required this.despawnBeyondTiles,
+    required this.walkSpeedPx,
+    required this.wanderRadiusTiles,
+  });
+
+  factory NpcSpawnConfig.fromYaml(YamlMap yaml) {
+    return NpcSpawnConfig(
+      smallVillageNinja: IntRangeConfig.fromYaml(
+        yaml['small_village_ninja'] as YamlMap,
+      ),
+      mediumVillageNinja: IntRangeConfig.fromYaml(
+        yaml['medium_village_ninja'] as YamlMap,
+      ),
+      bigVillageNinja: IntRangeConfig.fromYaml(
+        yaml['big_village_ninja'] as YamlMap,
+      ),
+      homeVillageRatio: readDouble(yaml, 'home_village_ratio'),
+      hostileRatio: (yaml['hostile_ratio'] as num?)?.toDouble() ?? 0.20,
+      spawnCheckIntervalSeconds: readDouble(
+        yaml,
+        'spawn_check_interval_seconds',
+      ),
+      spawnBufferTiles: readInt(yaml, 'spawn_buffer_tiles'),
+      despawnBeyondTiles: readInt(yaml, 'despawn_beyond_tiles'),
+      walkSpeedPx: readDouble(yaml, 'walk_speed_px'),
+      wanderRadiusTiles: readInt(yaml, 'wander_radius_tiles'),
+    );
+  }
+
+  final IntRangeConfig smallVillageNinja;
+  final IntRangeConfig mediumVillageNinja;
+  final IntRangeConfig bigVillageNinja;
+  final double homeVillageRatio;
+  /// Fraction of the passive pool explicitly filled with hostile (rogue) ninjas.
+  final double hostileRatio;
+  final double spawnCheckIntervalSeconds;
+  final int spawnBufferTiles;
+  final int despawnBeyondTiles;
+  final double walkSpeedPx;
+  final int wanderRadiusTiles;
+
+  IntRangeConfig rangeForSize(String sizeLabel) {
+    switch (sizeLabel.toLowerCase()) {
+      case 'big':
+        return bigVillageNinja;
+      case 'medium':
+        return mediumVillageNinja;
+      default:
+        return smallVillageNinja;
+    }
   }
 }

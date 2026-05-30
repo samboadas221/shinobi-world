@@ -121,8 +121,10 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
       );
 
       // Update in-memory run state progressively
-      final updatedVillages = List<GeneratedVillage>.from(currentRun.villages)..add(village);
-      final updatedNinjas = List<GeneratedNinja>.from(currentRun.ninjas)..addAll(villageNinjas);
+      final updatedVillages = List<GeneratedVillage>.from(currentRun.villages)
+        ..add(village);
+      final updatedNinjas = List<GeneratedNinja>.from(currentRun.ninjas)
+        ..addAll(villageNinjas);
 
       currentRun = GeneratedWorldRun(
         seed: run.seed,
@@ -140,7 +142,10 @@ class _FirstDemoFlowScreenState extends State<FirstDemoFlowScreen> {
     _updateLoading('Generating rogue ninjas...', 0.9);
     await Future.delayed(const Duration(milliseconds: 50));
 
-    final rogueNinjas = generator.generateRogueNinjas(random, generator.allPreCalculatedVillages.length);
+    final rogueNinjas = generator.generateRogueNinjas(
+      random,
+      generator.allPreCalculatedVillages.length,
+    );
     await _database.storeRemainingNinjas(
       seed: run.seed,
       villages: [],

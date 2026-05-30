@@ -14,8 +14,7 @@ Before making code, config, asset, or documentation changes, do all of the follo
 7. Read `project_docs/TODO_GLOBAL.md`.
 8. Read `project_docs/KNOWN_BUGS.md`.
 9. Skim the latest entries in `project_docs/SESSION_LOG.md`.
-10. Inspect repository state with `git status --short`.
-11. Inspect the relevant code/config files for the requested task before proposing or editing.
+10. Inspect the relevant code/config files for the requested task before proposing or editing.
 
 Do not rely only on memory, summaries, or assumptions. The markdown files are part of the project workflow and must be treated as live source-of-truth documents.
 

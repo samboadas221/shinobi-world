@@ -74,9 +74,9 @@ class NpcNameConfig {
   const NpcNameConfig({required this.first, required this.clan});
 
   factory NpcNameConfig.fromYaml(YamlMap yaml) => NpcNameConfig(
-        first: readStringList(yaml, 'first'),
-        clan: readStringList(yaml, 'clan'),
-      );
+    first: readStringList(yaml, 'first'),
+    clan: readStringList(yaml, 'clan'),
+  );
 
   final List<String> first;
   final List<String> clan;
